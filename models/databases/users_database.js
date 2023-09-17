@@ -13,6 +13,10 @@ const usersSchema = new mongoose.Schema({
         required: true,
         unique: true,
     },
+    role: {
+        type: String,
+        unique: true,
+    },
     password: {
         type: String,
     },

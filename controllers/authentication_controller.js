@@ -7,16 +7,17 @@ const { v4: uuidv4 } = require('uuid');
 const login = async (req, res) => {
     const secretKey = req.headers['secret-key'];
     if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey) {
-        const data = LoginRequest(req.body);
+        const request = new LoginRequest(req.body);
         var { currentDate, expirationDate } = time();
         if (email && password) {
-            const passToken = EncryptHelper.sha512(data.password);
-            const user = UsersModels.findOne({ email: { $eq: data.email }, password: { $eq: passToken } });
+            const passToken = EncryptHelper.sha512(request.password);
+            const user = UsersModels.findOne({ email: { $eq: request.email }, password: { $eq: passToken } });
             if (user) {
                 const token = {
                     name: user.name,
                     photo: user.photo,
                     email: user.email,
+                    role: user.role,
                     expired: expirationDate.toISOString(),
                     created_at: currentDate.toISOString(),
                 }
@@ -38,7 +39,7 @@ const login = async (req, res) => {
 const register = async (req, res) => {
     const secretKey = req.headers['secret-key'];
     if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey) {
-        const request = LoginRequest(req.body);
+        const request = new LoginRequest(req.body);
         const user = UsersModels.findOne({ email: { $eq: data.email } });
         var { currentDate, expirationDate } = time();
         if (!user) {
@@ -57,6 +58,7 @@ const register = async (req, res) => {
                     name: user.name,
                     photo: user.photo,
                     email: user.email,
+                    role: user.role,
                     expired: expirationDate.toISOString(),
                     created_at: currentDate.toISOString(),
                 }
@@ -77,9 +79,14 @@ const register = async (req, res) => {
                 data: null,
             });
         }
-
     }
 }
+
+function verifyToken(token, role) {
+
+}
+
+
 
 function time() {
     const currentDate = new Date();
