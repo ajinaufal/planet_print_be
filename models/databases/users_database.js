@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
-const { v4: uuidv4 } = require('uuid');
 
 const usersSchema = new mongoose.Schema({
+    _id: {
+        type: String,
+        required: true,
+    },
     name: {
         type: String,
     },
@@ -13,11 +16,10 @@ const usersSchema = new mongoose.Schema({
     password: {
         type: String,
     },
-    token: {
+    unique: {
         type: String,
         required: true,
         unique: true,
-        default: uuidv4,
     },
     photo: {
         type: String,
@@ -28,8 +30,11 @@ const usersSchema = new mongoose.Schema({
     createdAt: {
         type: Date
     },
+    updatedAt: {
+        type: Date,
+    },
 });
 
-const Users = mongoose.model('users', usersSchema);
+const UsersModels = mongoose.model('users', usersSchema);
 
-module.exports = Users;
+module.exports = UsersModels;
