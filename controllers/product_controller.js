@@ -25,7 +25,7 @@ const updateCategory = async (req, res) => {
         } else {
             if (verifyToken(token, 'admin')) {
                 const category = new CategoryProductModels();
-                category._id = uuidv4;
+                category.token = uuidv4;
                 category.name = request.name;
                 category.photo = request.photo;
                 category.createdAt = new Date();
@@ -49,7 +49,7 @@ const getCategory = async (req, res) => {
     const token = req.headers['Authorization'];
     if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey && verifyToken(token, null)) {
         const categorys = await CategoryProductModels.find({});
-        const data = categorys.map((category) => { return { id: category._id, name: category.name, photo: category.photo } });
+        const data = categorys.map((category) => { return { id: category.token, name: category.name, photo: category.photo } });
         res.status(200).json({
             message: "Congratulations, you have successfully get your data.",
             data: data,

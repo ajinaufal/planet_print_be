@@ -45,7 +45,6 @@ const register = async (req, res) => {
         if (!user) {
             if (request.email && request.password && request.phone) {
                 const user = new UsersModels();
-                user._id = uuidv4;
                 user.token = uuidv4;
                 user.email = request.email;
                 user.password = EncryptHelper.sha512(request.password);

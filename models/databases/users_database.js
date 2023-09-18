@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const usersSchema = new mongoose.Schema({
-    _id: {
+    token: {
         type: String,
         required: true,
     },
@@ -22,7 +22,6 @@ const usersSchema = new mongoose.Schema({
     },
     unique: {
         type: String,
-        required: true,
         unique: true,
     },
     photo: {
