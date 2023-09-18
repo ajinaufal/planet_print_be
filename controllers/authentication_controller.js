@@ -83,9 +83,22 @@ const register = async (req, res) => {
 }
 
 function verifyToken(token, role) {
+    const data = EncryptHelper.rsaDecode(token);
+    const jsonObject = JSON.parse(data);
 
+    const currentDate = new Date();
+    const targetDate = new Date(jsonObject.expired);
+    const user = UsersModels.findOne({ email: { $eq: jsonObject.email } });
+
+    if (currentDate.getTime() < targetDate.getTime() && user) {
+        if (role != null) {
+            if (role == jsonObject.role) return true;
+        } else {
+            return true;
+        }
+    }
+    return false;
 }
-
 
 
 function time() {
@@ -96,6 +109,6 @@ function time() {
 
 
 
-module.exports = { login, register };
+module.exports = { login, register, verifyToken };
 
 
