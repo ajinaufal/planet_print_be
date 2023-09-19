@@ -45,7 +45,6 @@ const register = async (req, res) => {
         if (!user) {
             if (request.email && request.password && request.phone) {
                 const user = new UsersModels();
-                user._id = uuidv4;
                 user.token = uuidv4;
                 user.email = request.email;
                 user.password = EncryptHelper.sha512(request.password);
@@ -83,9 +82,22 @@ const register = async (req, res) => {
 }
 
 function verifyToken(token, role) {
+    const data = EncryptHelper.rsaDecode(token);
+    const jsonObject = JSON.parse(data);
 
+    const currentDate = new Date();
+    const targetDate = new Date(jsonObject.expired);
+    const user = UsersModels.findOne({ email: { $eq: jsonObject.email } });
+
+    if (currentDate.getTime() < targetDate.getTime() && user) {
+        if (role != null) {
+            if (role == jsonObject.role) return true;
+        } else {
+            return true;
+        }
+    }
+    return false;
 }
-
 
 
 function time() {
@@ -96,6 +108,6 @@ function time() {
 
 
 
-module.exports = { login, register };
+module.exports = { login, register, verifyToken };
 
 

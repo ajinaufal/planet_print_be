@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const CategoryProductSchema = new mongoose.Schema({
-    _id: {
+    token: {
         type: String,
         required: true,
     },

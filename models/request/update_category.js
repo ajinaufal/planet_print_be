@@ -1,7 +1,7 @@
 class UpdateCategoryRequest {
     constructor(data) {
-        this.id = data.email || null;
-        this.name = data.password || null;
+        this.id = data.id || null;
+        this.name = data.name || null;
         this.photo = data.photo || null;
     }
 }
