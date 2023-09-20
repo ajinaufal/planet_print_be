@@ -1,113 +1,123 @@
 const EncryptHelper = require("../helper/encript.js");
 const UsersModels = require("../models/databases/users_database");
 const LoginRequest = require("../models/request/login_request");
-const env = require('dotenv').config();
-const { v4: uuidv4 } = require('uuid');
+const env = require("dotenv").config();
+const { v4: uuidv4 } = require("uuid");
+const RegisterRequest = require("../models/request/register_request.js");
 
 const login = async (req, res) => {
-    const secretKey = req.headers['secret-key'];
-    if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey) {
-        const request = new LoginRequest(req.body);
-        var { currentDate, expirationDate } = time();
-        if (email && password) {
-            const passToken = EncryptHelper.sha512(request.password);
-            const user = UsersModels.findOne({ email: { $eq: request.email }, password: { $eq: passToken } });
-            if (user) {
-                const token = {
-                    name: user.name,
-                    photo: user.photo,
-                    email: user.email,
-                    role: user.role,
-                    expired: expirationDate.toISOString(),
-                    created_at: currentDate.toISOString(),
-                }
-                res.status(200).json({
-                    message: "Congratulations, you have successfully logged in.",
-                    data: EncryptHelper.rsaEncode(JSON.stringify(token)),
-                    // decode: EncryptHelper.rsaDecode(jwt),
-                });
-            }
-        }
+  const secretKey = req.headers["secret-key"];
+  if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey) {
+    const request = new LoginRequest(req.body);
+    var { currentDate, expirationDate } = time();
+    if (request.email && request.password) {
+      const passToken = EncryptHelper.sha512(request.password);
+      const user = UsersModels.findOne({ email: { $eq: request.email }, password: { $eq: passToken } });
+      if (user) {
+        const token = {
+          name: user.name,
+          photo: user.photo,
+          email: user.email,
+          role: user.role,
+          expired: expirationDate.toISOString(),
+          created_at: currentDate.toISOString(),
+        };
+        res.status(200).json({
+          message: "Congratulations, you have successfully logged in.",
+          data: EncryptHelper.rsaEncode(JSON.stringify(token)),
+          // decode: EncryptHelper.rsaDecode(jwt),
+        });
+      }
     }
+  }
 
-    res.status(401).json({
-        message: "Please try again, the password or email is incorrect.",
-        data: null,
-    });
-}
+  res.status(401).json({
+    message: "Please try again, the password or email is incorrect.",
+    data: null,
+  });
+};
 
 const register = async (req, res) => {
-    const secretKey = req.headers['secret-key'];
-    if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey) {
-        const request = new LoginRequest(req.body);
-        const user = UsersModels.findOne({ email: { $eq: data.email } });
-        var { currentDate, expirationDate } = time();
-        if (!user) {
-            if (request.email && request.password && request.phone) {
-                const user = new UsersModels();
-                user.token = uuidv4;
-                user.email = request.email;
-                user.password = EncryptHelper.sha512(request.password);
-                user.phone = request.phone;
-                user.createdAt = new Date();
-                user.updatedAt = new Date();
-                await user.save();
+  const secretKey = req.headers["secret-key"];
+  var { currentDate, expirationDate } = time();
+  //   console.log(req.file);
+  if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey) {
+    const request = new RegisterRequest(req.body);
+    const verifyAccount = await UsersModels.findOne({ email: { $eq: request.email } });
+    console.log(!verifyAccount);
+    if (!verifyAccount) {
+      if (request.email && request.password && request.phone) {
+        const user = new UsersModels();
 
-                const token = {
-                    name: user.name,
-                    photo: user.photo,
-                    email: user.email,
-                    role: user.role,
-                    expired: expirationDate.toISOString(),
-                    created_at: currentDate.toISOString(),
-                }
+        if (req.file) {
+          user.photo = req.file.destination + "/" + req.file.filename;
+          const sourcePath = path.join(__dirname, "uploads", req.body.fileName);
+          const destinationPath = path.join(__dirname, "destination", req.body.fileName);
+          console.log(sourcePath);
+          console.log(destinationPath);
 
-                res.status(200).json({
-                    message: "Congratulations, you have successfully logged in.",
-                    data: EncryptHelper.rsaEncode(JSON.stringify(token)),
-                });
-            } else {
-                res.status(401).json({
-                    message: "Password, email or telephone number cannot be empty",
-                    data: null,
-                });
-            }
+          //   await fs.move(sourcePath, destinationPath);
         } else {
-            res.status(401).json({
-                message: "Email has already been used",
-                data: null,
-            });
+          user.photo = null;
         }
+
+        user.token = uuidv4();
+        user.email = request.email;
+        user.password = EncryptHelper.sha512(request.password);
+        user.phone = request.phone;
+        user.createdAt = new Date();
+        user.updatedAt = new Date();
+        await user.save();
+        res.status(200).json({
+          message: "Congratulations, you have successfully logged in.",
+          data: EncryptHelper.rsaEncode(
+            JSON.stringify({
+              name: user.name,
+              photo: user.photo,
+              email: user.email,
+              role: user.role,
+              expired: expirationDate.toISOString(),
+              created_at: currentDate.toISOString(),
+            })
+          ),
+        });
+      } else {
+        res.status(401).json({
+          message: "Password, email or telephone number cannot be empty",
+          data: null,
+        });
+      }
+    } else {
+      res.status(401).json({
+        message: "Email is already in use",
+        data: null,
+      });
     }
-}
+  }
+};
 
 function verifyToken(token, role) {
-    const data = EncryptHelper.rsaDecode(token);
-    const jsonObject = JSON.parse(data);
+  const data = EncryptHelper.rsaDecode(token);
+  const jsonObject = JSON.parse(data);
 
-    const currentDate = new Date();
-    const targetDate = new Date(jsonObject.expired);
-    const user = UsersModels.findOne({ email: { $eq: jsonObject.email } });
+  const currentDate = new Date();
+  const targetDate = new Date(jsonObject.expired);
+  const user = UsersModels.findOne({ email: { $eq: jsonObject.email } });
 
-    if (currentDate.getTime() < targetDate.getTime() && user) {
-        if (role != null) {
-            if (role == jsonObject.role) return true;
-        } else {
-            return true;
-        }
+  if (currentDate.getTime() < targetDate.getTime() && user) {
+    if (role != null) {
+      if (role == jsonObject.role) return true;
+    } else {
+      return true;
     }
-    return false;
+  }
+  return false;
 }
-
 
 function time() {
-    const currentDate = new Date();
-    const expirationDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
-    return { currentDate, expirationDate };
+  const currentDate = new Date();
+  const expirationDate = new Date(currentDate.getTime() + 7 * 24 * 60 * 60 * 1000);
+  return { currentDate, expirationDate };
 }
 
-
-
 module.exports = { login, register, verifyToken };
-
-

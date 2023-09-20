@@ -1,16 +1,23 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
+const dotenv = require("dotenv");
+dotenv.config();
 
-async function mongodbConnect() {
-    try {
-        await mongoose.connect(process.env.MONGODB_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-            poolSize: 1000,
-        });
-        console.log('Connected to MongoDB');
-    } catch (error) {
-        console.error('Error connecting to MongoDB:', error);
-    }
+// MongoDB Connection Function
+async function connectToMongoDB() {
+  try {
+    const uri = process.env.MONGOLAB_URI;
+    const options = {
+      useUnifiedTopology: true,
+      useNewUrlParser: true,
+      autoIndex: true,
+      maxPoolSize: 10,
+      dbName: "planet_print",
+    };
+    await mongoose.connect(uri, options);
+    console.log("Connected to MongoDB");
+  } catch (err) {
+    console.error("Error connecting to MongoDB:", err);
+  }
 }
 
-module.exports = { mongodbConnect };
+module.exports = { connectToMongoDB };
