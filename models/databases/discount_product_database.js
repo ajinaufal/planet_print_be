@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const DiscountProductSchema = new mongoose.Schema({
     token: {
@@ -7,7 +7,7 @@ const DiscountProductSchema = new mongoose.Schema({
     },
     product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'product',
+        ref: "product",
     },
     deskripsi: {
         type: String,
@@ -23,10 +23,10 @@ const DiscountProductSchema = new mongoose.Schema({
         type: Date,
     },
     createdAt: {
-        type: Date
+        type: Date,
     },
 });
 
-const DiscountProductModels = mongoose.model('discount_product', DiscountProductSchema);
+const DiscountProductModels = mongoose.model("discount_product", DiscountProductSchema);
 
 module.exports = DiscountProductModels;

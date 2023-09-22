@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const CategoryProductSchema = new mongoose.Schema({
     token: {
@@ -14,13 +14,13 @@ const CategoryProductSchema = new mongoose.Schema({
         required: true,
     },
     createdAt: {
-        type: Date
+        type: Date,
     },
     updatedAt: {
         type: Date,
     },
 });
 
-const CategoryProductModels = mongoose.model('category_product', CategoryProductSchema);
+const CategoryProductModels = mongoose.model("category_product", CategoryProductSchema);
 
 module.exports = CategoryProductModels;

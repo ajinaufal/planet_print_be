@@ -7,7 +7,6 @@ const fs = require("fs");
 const { v4: uuidv4 } = require("uuid");
 const env = require("dotenv").config();
 
-
 const login = async (req, res) => {
     const secretKey = req.headers["secret-key"];
     if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey) {
@@ -51,10 +50,14 @@ const register = async (req, res) => {
             if (request.email && request.password && request.phone) {
                 const user = new UsersModels();
                 if (req.file) {
-                    fs.rename(`./public/temporary/${req.file.filename}`, `./public/avatar/${req.file.filename}`, (err) => {
-                        if (err) console.error('Error moving file:', err);
-                        console.log('File moved successfully!');
-                    });
+                    fs.rename(
+                        `./public/temporary/${req.file.filename}`,
+                        `./public/avatar/${req.file.filename}`,
+                        (err) => {
+                            if (err) console.error("Error moving file:", err);
+                            console.log("File moved successfully!");
+                        }
+                    );
                     user.photo = `/public/avatar/${req.file.filename}`;
                 } else {
                     user.photo = null;
@@ -86,7 +89,6 @@ const register = async (req, res) => {
                     data: null,
                 });
             }
-
         } else {
             res.status(401).json({
                 message: "Email is already in use",

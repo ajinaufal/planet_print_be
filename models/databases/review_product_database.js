@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const ReviewProductSchema = new mongoose.Schema({
     token: {
@@ -7,11 +7,11 @@ const ReviewProductSchema = new mongoose.Schema({
     },
     product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'product',
+        ref: "product",
     },
     users: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'users',
+        ref: "users",
     },
     deskripsi: {
         type: String,
@@ -22,10 +22,10 @@ const ReviewProductSchema = new mongoose.Schema({
         required: true,
     },
     createdAt: {
-        type: Date
+        type: Date,
     },
 });
 
-const ReviewProductModels = mongoose.model('review_product', ReviewProductSchema);
+const ReviewProductModels = mongoose.model("review_product", ReviewProductSchema);
 
 module.exports = ReviewProductModels;
