@@ -6,11 +6,13 @@ const productController = require("../controllers/product_controller.js");
 const { fileService } = require("../middleware/file_middleware.js");
 
 router.post("/login", authController.login);
-router.post("/register", async (req, res, next) => fileService(req, res, "single", "photo", authController.register));
+router.post("/register", async (req, res, next) =>
+    fileService(req, res, "single", "photo", authController.register)
+);
 
 router.post("/product/category", productController.getCategory);
 router.post("/product/category/update", async (req, res, next) =>
-    fileService(req, res, "single", "image", productController.updateCategory)
+    fileService(req, res, "single", "photo", productController.updateCategory)
 );
 
 module.exports = router;
