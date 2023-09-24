@@ -5,16 +5,16 @@ const RegisterRequest = require("../models/request/register_request.js");
 const FileHelper = require("../helper/file_helper.js");
 const { v4: uuidv4 } = require("uuid");
 const SecurityHelper = require("../helper/security_helper.js");
+const TimeHelper = require("../helper/time_helper.js");
 
 const login = async (req, res) => {
     const verify = SecurityHelper.verifyKey(req, res);
-
     if (verify) {
         const request = new LoginRequest(req.body);
-        var { currentDate, expirationDate } = time();
+        var { currentDate, expirationDate } = TimeHelper.timeToken();
         if (request.email && request.password) {
             const passToken = EncryptHelper.sha512(request.password);
-            const user = UsersModels.findOne({
+            const user = await UsersModels.findOne({
                 email: { $eq: request.email },
                 password: { $eq: passToken },
             });
@@ -33,12 +33,20 @@ const login = async (req, res) => {
                         "Congratulations, you have successfully logged in.",
                     data: EncryptHelper.rsaEncode(JSON.stringify(token)),
                 });
+            } else {
+                res.status(401).json({
+                    message:
+                        "Please try again, the password or email is incorrect.",
+                    data: null,
+                });
             }
+        } else {
+            res.status(401).json({
+                message:
+                    "Please try again, the password or email is incorrect.",
+                data: null,
+            });
         }
-        res.status(401).json({
-            message: "Please try again, the password or email is incorrect.",
-            data: null,
-        });
     }
 };
 
@@ -62,6 +70,7 @@ const register = async (req, res) => {
                 }
 
                 user.token = uuidv4();
+                user.role = "user";
                 user.email = request.email;
                 user.password = EncryptHelper.sha512(request.password);
                 user.phone = request.phone;

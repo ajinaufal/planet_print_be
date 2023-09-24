@@ -7,3 +7,5 @@ class TimeHelper {
         return { currentDate, expirationDate };
     }
 }
+
+module.exports = TimeHelper;

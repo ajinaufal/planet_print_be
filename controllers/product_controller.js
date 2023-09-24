@@ -1,10 +1,3 @@
-const EncryptHelper = require("../helper/encript");
-const CategoryProductModels = require("../models/databases/category_product_database");
-const UsersModels = require("../models/databases/users_database");
-const UpdateCategoryRequest = require("../models/request/update_category_request");
-const { v4: uuidv4 } = require("uuid");
-const { verifyToken } = require("./authentication_controller");
-const FileHelper = require("../helper/file_helper");
 const SecurityHelper = require("../helper/security_helper");
 const ProductRequest = require("../models/request/update_product_request");
 const ProductModels = require("../models/databases/product_database");
@@ -40,6 +33,13 @@ const updateProduct = async (req, res) => {
         if (data.title && data.price && data.deskripsi && data.spesifikasi) {
             const product = new ProductModels();
             product.token = uuidv4();
+            product.title = data.title;
+            product.price = data.price;
+            product.deskripsi = data.deskripsi;
+            product.spesifikasi = data.spesifikasi;
+            product.createdAt = new Date();
+            product.updatedAt = new Date();
+            await product.save();
         } else {
         }
     }
