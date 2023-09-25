@@ -23,8 +23,7 @@ const updateCategory = async (req, res) => {
                 update.updatedAt = new Date();
                 await CategoryProductModels.updateOne(update);
                 res.status(200).json({
-                    message:
-                        "Congratulations, you have successfully updated your data.",
+                    message: "Congratulations, you have successfully updated your data.",
                     data: { name: update.name, photo: update.photo },
                 });
             } else {
@@ -42,8 +41,7 @@ const updateCategory = async (req, res) => {
                 category.updatedAt = new Date();
                 await category.save();
                 res.status(200).json({
-                    message:
-                        "Congratulations, you have successfully created your data.",
+                    message: "Congratulations, you have successfully created your data.",
                     data: { name: category.name, photo: category.photo },
                 });
             }
@@ -63,10 +61,7 @@ const updateCategory = async (req, res) => {
 const getCategory = async (req, res) => {
     const secretKey = req.headers["secret-key"];
     const token = req.headers["Authorization"];
-    if (
-        EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey &&
-        verifyToken(token, null)
-    ) {
+    if (EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey && verifyToken(token, null)) {
         const categorys = await CategoryProductModels.find({});
         const data = categorys.map((category) => {
             return {
