@@ -45,4 +45,11 @@ const updateProduct = async (req, res) => {
     }
 };
 
+const cartProductUpdate = async (req, res) => {
+    const { verify, dataToken } = SecurityHelper.isSecure(req, res, null);
+    if (verify) {
+    } else {
+    }
+};
+
 module.exports = { updateProduct };
