@@ -1,0 +1,3 @@
+class productHelper {
+    async getAllData() {}
+}

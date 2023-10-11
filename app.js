@@ -1,7 +1,6 @@
 const cors = require("cors");
 const dotenv = require("dotenv");
 const express = require("express");
-const mongoose = require("mongoose");
 const { connectToMongoDB } = require("./config/db_config");
 var v1Router = require("./routers/v1_router.js");
 const bodyParser = require("body-parser");

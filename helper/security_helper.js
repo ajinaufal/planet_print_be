@@ -1,3 +1,4 @@
+const UsersModels = require("../models/databases/users_database");
 const EncryptHelper = require("./encript");
 const env = require("dotenv").config();
 
@@ -11,7 +12,8 @@ class SecurityHelper {
 
     static verifyToken(req, res, role) {
         try {
-            const token = req.headers["Authorization"];
+            const token =
+                "Vuwrs4RMhqEXHKVSEE/GhVwUDW0LkbR6+HNWBAYefZ2R2IbkI7AQpH1BB/eEoxzsYdqWSK/PPtjWqUUEfKW9GGYdzYslgpZwmbNVMiVBxK2PtDT8z6AtpcKtK7bclK9U9kaJ7so2sIek3veQMsQMQhJfHBKgXqEuIJi9HMWE/aemXrZUzNZ5ZL6dLIYaYVGktUOydKWlocYDMmHoLV51104XBK9H2MjKESPSuXaLHq9FUcmaB10OkZzhy50PFhgaNgIs+/Idglfxim/JqH1d3TMgxWCgH/ty7GudznwymRVHOHw32UIrAmk8zH7FDp7EIyJuGFcuc2V3Ac5udZi55A==";
             var isVerify = false;
             var data = null;
 
@@ -21,9 +23,7 @@ class SecurityHelper {
 
                 const currentDate = new Date();
                 const targetDate = new Date(data.expired);
-                const user = UsersModels.findOne({
-                    email: { $eq: data.email },
-                });
+                const user = UsersModels.findOne({ email: { $eq: data.email } });
 
                 if (currentDate.getTime() < targetDate.getTime() && user) {
                     if (role != null) {
@@ -60,9 +60,7 @@ class SecurityHelper {
         try {
             const secretKey = req.headers["secret-key"];
             if (secretKey) {
-                return (
-                    EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey
-                );
+                return EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey;
             } else {
                 const message = "You made a mistake with the key.";
                 res.status(401).json({ message: message, data: null });

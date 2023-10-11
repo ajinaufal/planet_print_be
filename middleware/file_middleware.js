@@ -11,7 +11,7 @@ const storage = multer.diskStorage({
     },
 });
 
-const fileFilter = (req, file, cb) => {
+const filter = (req, file, cb) => {
     if (
         file.mimetype == "image/png" ||
         file.mimetype == "image/jpg" ||
@@ -24,9 +24,9 @@ const fileFilter = (req, file, cb) => {
     }
 };
 
-const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: fileFilter });
+const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: filter });
 
-function fileService(req, res, type, field, controller) {
+function fileService(req, res, type, field) {
     let services;
     if (type == "single") {
         services = upload.single(field);
@@ -36,17 +36,17 @@ function fileService(req, res, type, field, controller) {
 
     services(req, res, async (err) => {
         if (err instanceof multer.MulterError) {
-            res.status(400).json({
+            return {
+                code: 400,
                 message: `Failed to upload file, ${err}`,
-                data: null,
-            });
+            };
         } else if (err) {
-            res.status(500).json({
-                message: `An error occurred in the system, ${err}`,
-                data: null,
-            });
+            return {
+                code: 500,
+                message: `an error occurred in the system, ${err}`,
+            };
         } else {
-            controller(req, res);
+            return null;
         }
     });
 }
