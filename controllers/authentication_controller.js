@@ -27,6 +27,7 @@ const login = async (req, res) => {
                     role: user.role,
                     expired: expirationDate.toISOString(),
                     created_at: currentDate.toISOString(),
+                    token: user.token,
                 };
                 res.status(200).json({
                     message:
@@ -88,6 +89,7 @@ const register = async (req, res) => {
                             role: user.role,
                             expired: expirationDate.toISOString(),
                             created_at: currentDate.toISOString(),
+                            token: user.token,
                         })
                     ),
                 });
