@@ -43,7 +43,6 @@ const updateProduct = async (req, res) => {
             product.createdAt = new Date();
             product.updatedAt = new Date();
             await product.save();
-        } else {
         }
     }
 };

@@ -7,7 +7,14 @@ const storage = multer.diskStorage({
         cb(null, "./public/temporary");
     },
     filename: (req, file, cb) => {
-        cb(null, uuidv4() + "." + file.originalname.split(".")[file.originalname.split(".").length - 1]);
+        cb(
+            null,
+            uuidv4() +
+                "." +
+                file.originalname.split(".")[
+                    file.originalname.split(".").length - 1
+                ]
+        );
     },
 });
 
@@ -24,7 +31,11 @@ const filter = (req, file, cb) => {
     }
 };
 
-const upload = multer({ storage: storage, limits: { fileSize: 5 * 1024 * 1024 }, fileFilter: filter });
+const upload = multer({
+    storage: storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: filter,
+});
 
 function fileService(req, res, type, field) {
     let services;
@@ -35,20 +46,8 @@ function fileService(req, res, type, field) {
     }
 
     services(req, res, async (err) => {
-        if (err instanceof multer.MulterError) {
-            return {
-                code: 400,
-                message: `Failed to upload file, ${err}`,
-            };
-        } else if (err) {
-            return {
-                code: 500,
-                message: `an error occurred in the system, ${err}`,
-            };
-        } else {
-            return null;
-        }
+        return err;
     });
 }
 
-module.exports = { fileService };
+module.exports = { fileService, upload };
