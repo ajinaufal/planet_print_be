@@ -6,6 +6,7 @@ const FileHelper = require("../helper/file_helper.js");
 const { v4: uuidv4 } = require("uuid");
 const SecurityHelper = require("../helper/security_helper.js");
 const TimeHelper = require("../helper/time_helper.js");
+const { userRoleEnum } = require("../enum/role_enum.js");
 
 const login = async (req, res) => {
     const verify = SecurityHelper.verifyKey(req, res);
@@ -52,26 +53,25 @@ const login = async (req, res) => {
 };
 
 const register = async (req, res) => {
-    const verify = SecurityHelper.verifyKey(req, res);
     var { currentDate, expirationDate } = TimeHelper.timeToken();
-    if (verify) {
-        const request = new RegisterRequest(req.body);
+    const request = new RegisterRequest(req);
+    if (SecurityHelper.verifyKey(req, res)) {
         const existAccount = await UsersModels.findOne({
             email: { $eq: request.email },
         });
         if (!existAccount) {
             if (request.email && request.password && request.phone) {
                 const user = new UsersModels();
-                if (req.file) {
+                if (request.file) {
                     FileHelper.move(
-                        `./public/temporary/${req.file.filename}`,
-                        `./public/avatar/${req.file.filename}`
+                        `./public/temporary/${request.file.fileName}`,
+                        `./public/avatar/${request.file.fileName}`
                     );
-                    user.photo = `/public/avatar/${req.file.filename}`;
+                    user.photo = `/avatar/${request.file.fileName}`;
                 }
 
                 user.token = uuidv4();
-                user.role = "user";
+                user.role = userRoleEnum.User;
                 user.email = request.email;
                 user.password = EncryptHelper.sha512(request.password);
                 user.phone = request.phone;
@@ -94,7 +94,9 @@ const register = async (req, res) => {
                     ),
                 });
             } else {
-                FileHelper.delete(`./public/temporary/${req.file.filename}`);
+                FileHelper.delete(
+                    `./public/temporary/${request.file.fileName}`
+                );
                 res.status(401).json({
                     message:
                         "Password, email or telephone number cannot be empty",

@@ -1,4 +1,4 @@
-class ProductRequest {
+class UpdateProductRequest {
     constructor(data) {
         this.token = data.id || null;
         this.title = data.title || null;
@@ -9,4 +9,4 @@ class ProductRequest {
     }
 }
 
-module.exports = ProductRequest;
+module.exports = UpdateProductRequest;

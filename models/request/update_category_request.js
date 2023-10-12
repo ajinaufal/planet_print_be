@@ -1,8 +1,11 @@
+const FileRequest = require("./file_request");
+
 class UpdateCategoryRequest {
-    constructor(data) {
-        this.token = data.id || null;
-        this.name = data.name || null;
-        this.photo = data.photo || null;
+    constructor(req) {
+        this.token = req.body.id || null;
+        this.name = req.body.name || null;
+        this.photo = req.body.photo || null;
+        this.file = req.file ? new FileRequest(req.file) : null;
     }
 }
 

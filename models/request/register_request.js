@@ -1,9 +1,11 @@
+const FileRequest = require("./file_request");
+
 class RegisterRequest {
-    constructor(data) {
-        this.email = data.email || null;
-        this.password = data.password || null;
-        this.phone = data.phone || null;
-        this.photo = data.photo || null;
+    constructor(req) {
+        this.email = req.body.email || null;
+        this.password = req.body.password || null;
+        this.phone = req.body.phone || null;
+        this.file = req.body.photo ? new FileRequest(req.file) : null;
     }
 }
 
