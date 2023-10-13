@@ -28,48 +28,55 @@ const getProduct = async (req, res) => {
                 data: product,
             });
         }
-    } catch (error) {}
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: error, data: product });
+    }
 };
 
-// const updateProduct = async (req, res) => {
-//     const { verify, dataToken } = SecurityHelper.isSecure(req, res, null);
-//     const data = new ProductRequest(req.body);
-//     if (verify) {
-//         if (data.token) {
-//             const update = await ProductModels.findOne({
-//                 token: { $eq: data.token },
-//             });
+const updateProduct = async (req, res) => {
+    const data = new ProductRequest(req.body);
+    if (SecurityHelper.isSecure(req, res, null)) {
+        if (data.token) {
+            const update = await ProductModels.findOne({
+                token: { $eq: data.token },
+            });
 
-//             if (data.title) update.title = data.title;
-//             if (data.price) update.price = data.price;
-//             if (data.deskripsi) update.deskripsi = data.deskripsi;
-//             if (data.spesifikasi) update.spesifikasi = data.spesifikasi;
-//             update.updatedAt = new Date();
+            if (data.title) update.title = data.title;
+            if (data.price) update.price = data.price;
+            if (data.deskripsi) update.deskripsi = data.deskripsi;
+            if (data.spesifikasi) update.spesifikasi = data.spesifikasi;
+            update.updatedAt = new Date();
 
-//             if (data.updateStock) {
-//                 const stock = new StockProductModels();
-//                 stock.product = update._id;
-//                 stock.type = data.updateStock < 0 ? "subtraction" : "addition";
-//                 stock.code = "update";
-//                 stock.total = Math.abs(data.updateStock);
-//                 stock.createdAt = new Date();
-//                 await stock.save();
-//             }
-//         }
-//     } else {
-//         if (data.title && data.price && data.deskripsi && data.spesifikasi) {
-//             const product = new ProductModels();
-//             product.token = uuidv4();
-//             product.title = data.title;
-//             product.price = data.price;
-//             product.deskripsi = data.deskripsi;
-//             product.spesifikasi = data.spesifikasi;
-//             product.createdAt = new Date();
-//             product.updatedAt = new Date();
-//             await product.save();
-//         }
-//     }
-// };
+            if (data.updateStock) {
+                const stock = new StockProductModels();
+                stock.product = update._id;
+                stock.type = data.updateStock < 0 ? "subtraction" : "addition";
+                stock.code = "update";
+                stock.total = Math.abs(data.updateStock);
+                stock.createdAt = new Date();
+                await stock.save();
+            }
+        } else {
+            if (
+                data.title &&
+                data.price &&
+                data.deskripsi &&
+                data.spesifikasi
+            ) {
+                const product = new ProductModels();
+                product.token = uuidv4();
+                product.title = data.title;
+                product.price = data.price;
+                product.deskripsi = data.deskripsi;
+                product.spesifikasi = data.spesifikasi;
+                product.createdAt = new Date();
+                product.updatedAt = new Date();
+                await product.save();
+            }
+        }
+    }
+};
 
 // const cartProductUpdate = async (req, res) => {
 //     const { verify, dataToken } = SecurityHelper.isSecure(req, res, null);
