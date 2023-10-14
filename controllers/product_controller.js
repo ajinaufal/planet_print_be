@@ -3,15 +3,15 @@ const SecurityHelper = require("../helper/security_helper");
 const ProductModels = require("../models/databases/product_database");
 const StockProductModels = require("../models/databases/stock_product_database");
 const { v4: uuidv4 } = require("uuid");
-const CartRequest = require("../models/request/cart_request");
-const UsersModels = require("../models/databases/users_database");
-const CartProductModels = require("../models/databases/cart_product_database");
-const ProductRequest = require("../models/request/product_request");
+const UpdateProductRequest = require("../models/request/update_product_request");
+const FileHelper = require("../helper/file_helper");
+const CategoryProductModels = require("../models/databases/category_product_database");
+const { basename } = require("path");
 
 const getProduct = async (req, res) => {
-    try {
+    if (await SecurityHelper.isSecure(req, res, null)) {
         var product = [];
-        if (SecurityHelper.isSecure(req, res, null)) {
+        try {
             const request = new ProductRequest(req.body);
             if (request.token) {
                 product = await ProductModels.find({
@@ -27,98 +27,121 @@ const getProduct = async (req, res) => {
                     "Congratulations, you have successfully get your data.",
                 data: product,
             });
+        } catch (error) {
+            console.error(error);
+            res.status(500).json({ message: error, data: product });
         }
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ message: error, data: product });
     }
 };
 
 const updateProduct = async (req, res) => {
-    const data = new ProductRequest(req.body);
-    if (SecurityHelper.isSecure(req, res, null)) {
-        if (data.token) {
-            const update = await ProductModels.findOne({
-                token: { $eq: data.token },
+    const request = new UpdateProductRequest(req);
+    if (await SecurityHelper.isSecure(req, res, null)) {
+        try {
+            if (request.token) {
+                const update = await ProductModels.findOne({
+                    token: { $eq: request.token },
+                });
+
+                if (request.title) update.title = request.title;
+                if (request.price) update.price = request.price;
+                if (request.deskripsi) update.deskripsi = request.deskripsi;
+                if (request.spesifikasi) {
+                    update.spesifikasi = request.spesifikasi;
+                }
+                update.updatedAt = new Date();
+                if (request.tokenCategory) {
+                    const category = await CategoryProductModels.findOne({
+                        token: { $eq: request.tokenCategory },
+                    });
+                    update.category = category._id;
+                }
+
+                await ProductModels.updateOne(update);
+                if (request.updateStock) {
+                    const stock = new StockProductModels();
+                    stock.product = update._id;
+                    stock.type =
+                        request.updateStock < 0 ? "subtraction" : "addition";
+                    stock.code = "update";
+                    stock.total = Math.abs(request.updateStock);
+                    stock.createdAt = new Date();
+                    await stock.save();
+                }
+                res.status(200).json({
+                    message:
+                        "Congratulations, you have successfully update your data.",
+                });
+            } else {
+                const isRequired =
+                    request.title &&
+                    request.price &&
+                    request.deskripsi &&
+                    request.updateStock;
+                if (isRequired) {
+                    const product = new ProductModels();
+                    product.token = uuidv4();
+                    product.title = request.title;
+                    product.price = request.price;
+                    product.deskripsi = request.deskripsi;
+                    product.spesifikasi = request.spesifikasi;
+                    product.createdAt = new Date();
+                    product.updatedAt = new Date();
+
+                    if (request.file) {
+                        product.photo = request.file.map(
+                            (file) => `/product/${file.fileName}`
+                        );
+                    }
+
+                    if (request.tokenCategory) {
+                        const category = await CategoryProductModels.findOne({
+                            token: { $eq: request.tokenCategory },
+                        });
+                        product.category = category._id;
+                    }
+
+                    await product.save().then((prod) => {
+                        prod.photo.map((phot) =>
+                            FileHelper.move(
+                                `./public/temporary/${basename(phot)}`,
+                                `./public/product/${basename(phot)}`
+                            )
+                        );
+                    });
+
+                    if (request.updateStock) {
+                        const stock = new StockProductModels();
+                        stock.token = uuidv4();
+                        stock.product = product._id;
+                        stock.type =
+                            request.updateStock < 0
+                                ? "subtraction"
+                                : "addition";
+                        stock.code = "update";
+                        stock.total = Math.abs(request.updateStock);
+                        stock.createdAt = new Date();
+                        await stock.save();
+                    }
+
+                    res.status(200).json({
+                        message:
+                            "Congratulations, you have successfully update your data.",
+                    });
+                } else {
+                    res.status(403).json({
+                        message:
+                            "Pay attention to your input, there are some required things you missed.",
+                    });
+                }
+            }
+        } catch (error) {
+            console.log(error);
+            res.status(403).json({
+                message: `An error occurred in the system update product. ${error}`,
             });
-
-            if (data.title) update.title = data.title;
-            if (data.price) update.price = data.price;
-            if (data.deskripsi) update.deskripsi = data.deskripsi;
-            if (data.spesifikasi) update.spesifikasi = data.spesifikasi;
-            update.updatedAt = new Date();
-
-            if (data.updateStock) {
-                const stock = new StockProductModels();
-                stock.product = update._id;
-                stock.type = data.updateStock < 0 ? "subtraction" : "addition";
-                stock.code = "update";
-                stock.total = Math.abs(data.updateStock);
-                stock.createdAt = new Date();
-                await stock.save();
-            }
-        } else {
-            if (
-                data.title &&
-                data.price &&
-                data.deskripsi &&
-                data.spesifikasi
-            ) {
-                const product = new ProductModels();
-                product.token = uuidv4();
-                product.title = data.title;
-                product.price = data.price;
-                product.deskripsi = data.deskripsi;
-                product.spesifikasi = data.spesifikasi;
-                product.createdAt = new Date();
-                product.updatedAt = new Date();
-                await product.save();
-            }
         }
     }
 };
 
-// const cartProductUpdate = async (req, res) => {
-//     const { verify, dataToken } = SecurityHelper.isSecure(req, res, null);
-//     if (verify) {
-//         const user = await UsersModels.findOne({ token: dataToken.token });
-//         if (user) {
-//             const listCart = await CartProductModels.find({ user: user._id });
-//             listCart.map(async (cart) => {
-//                 if (cart.status == "stay") {
-//                     const product = await ProductModels.findOne({
-//                         _id: cart.product,
-//                     });
-//                     if (product) {
-//                         const maxStock = stockProduct(product._id);
-//                         const data = {
-//                             name: product.title,
-//                             original_price: product.price,
-//                             stock:
-//                                 cart.total < maxStock ? cart.total : maxStock,
-//                             max_stock: maxStock,
-//                         };
-//                     }
-//                 }
-//             });
-//         }
-//     } else {
-//     }
-// };
-
-// async function stockProduct(idProduct) {
-//     const products = await StockProductModels.find({ product: idProduct });
-//     var stock = 0;
-//     if (products) {
-//         products.map((product) => {
-//             if (product.type == "addition") {
-//                 stock = stock + product.total;
-//             } else if (product.type == "subtraction") {
-//                 stock = stock - product.total;
-//             }
-//         });
-//     }
-//     return stock;
-// }
-
-module.exports = { getProduct };
+module.exports = { getProduct, updateProduct };

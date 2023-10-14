@@ -3,10 +3,16 @@ const EncryptHelper = require("./encript");
 const env = require("dotenv").config();
 
 class SecurityHelper {
+    static dataToken(req) {
+        const token = req.headers["authorization"];
+        const data = JSON.parse(EncryptHelper.rsaDecode(token));
+        return data;
+    }
+
     static async isSecure(req, res, role) {
         try {
             const secretKey = req.headers["secret-key"];
-            const token = req.headers["Authorization"];
+            const token = req.headers["authorization"];
             const compareKey = EncryptHelper.sha512(process.env.SECRET_KEY);
             const isKey = compareKey === secretKey;
             if (secretKey && isKey) {
@@ -24,7 +30,6 @@ class SecurityHelper {
                                 if (role == user.role) return true;
                                 res.status(406).json({
                                     message: "Your position cannot access it",
-                                    data: null,
                                 });
                             } else {
                                 return true;
@@ -34,32 +39,28 @@ class SecurityHelper {
                         } else {
                             res.status(401).json({
                                 message: "User not found",
-                                data: null,
                             });
                         }
                     } else {
                         res.status(401).json({
                             message: "Your token has expired",
-                            data: null,
                         });
                     }
                 } else {
                     res.status(401).json({
                         message: "You forgot the token",
-                        data: null,
                     });
                     return false;
                 }
             } else {
                 res.status(401).json({
                     message: "You made a mistake with the key",
-                    data: null,
                 });
                 return false;
             }
         } catch (error) {
-            res.status(401).json({ message: `${error}`, data: null });
-            console.log(error);
+            res.status(401).json({ message: `${error}` });
+            console.error(error);
             return false;
         }
     }

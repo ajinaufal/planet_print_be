@@ -4,10 +4,11 @@ const SecurityHelper = require("../helper/security_helper");
 const CategoryProductModels = require("../models/databases/category_product_database");
 const UpdateCategoryRequest = require("../models/request/update_category_request");
 const { v4: uuidv4 } = require("uuid");
+const { basename } = require("path");
 
 const updateCategory = async (req, res) => {
-    try {
-        if (SecurityHelper.isSecure(req, res, userRoleEnum.Admin)) {
+    if (await SecurityHelper.isSecure(req, res, userRoleEnum.Admin)) {
+        try {
             const request = new UpdateCategoryRequest(req);
             if (request.token) {
                 const update = await CategoryProductModels.findOne({
@@ -34,14 +35,19 @@ const updateCategory = async (req, res) => {
                     const category = new CategoryProductModels();
                     category.token = uuidv4();
                     category.name = request.name;
-                    FileHelper.move(
-                        `./public/temporary/${request.file.fileName}`,
-                        `./public/category_product/${request.file.fileName}`
-                    );
                     category.photo = `/category_product/${request.file.fileName}`;
                     category.createdAt = new Date();
                     category.updatedAt = new Date();
-                    await category.save();
+                    await category
+                        .save()
+                        .then((data) =>
+                            FileHelper.move(
+                                `./public/temporary/${basename(data.photo)}`,
+                                `./public/category_product/${basename(
+                                    data.photo
+                                )}`
+                            )
+                        );
                     res.status(200).json({
                         message:
                             "Congratulations, you have successfully created your data.",
@@ -54,39 +60,37 @@ const updateCategory = async (req, res) => {
                     });
                 }
             }
+        } catch (error) {
+            res.status(500).json({
+                message: `an error occurred in the system, ${error}`,
+                data: null,
+            });
         }
-    } catch (error) {
-        res.status(500).json({
-            message: `an error occurred in the system, ${error}`,
-            data: null,
-        });
     }
 };
 
 const getCategory = async (req, res) => {
-    const secretKey = req.headers["secret-key"];
-    const token = req.headers["Authorization"];
-    if (
-        EncryptHelper.sha512(process.env.SECRET_KEY) === secretKey &&
-        verifyToken(token, null)
-    ) {
-        const categorys = await CategoryProductModels.find({});
-        const data = categorys.map((category) => {
-            return {
-                id: category.token,
-                name: category.name,
-                photo: category.photo,
-            };
-        });
-        res.status(200).json({
-            message: "Congratulations, you have successfully get your data.",
-            data: data,
-        });
+    if (await SecurityHelper.isSecure(req, res, null)) {
+        try {
+            const categorys = await CategoryProductModels.find({});
+            const data = categorys.map((category) => {
+                return {
+                    id: category.token,
+                    name: category.name,
+                    photo: category.photo,
+                };
+            });
+            res.status(200).json({
+                message:
+                    "Congratulations, you have successfully get your data.",
+                data: data,
+            });
+        } catch (error) {
+            res.status(500).json({
+                message: `an error occurred in the system, ${error}`,
+            });
+        }
     }
-    res.status(200).json({
-        message: "Failed, you did not get your data successfully.",
-        data: null,
-    });
 };
 
 module.exports = { updateCategory, getCategory };
