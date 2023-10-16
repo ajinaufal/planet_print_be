@@ -9,6 +9,9 @@ const DiscountProductSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: "product",
     },
+    banners: {
+        type: String,
+    },
     deskripsi: {
         type: String,
     },
@@ -27,6 +30,9 @@ const DiscountProductSchema = new mongoose.Schema({
     },
 });
 
-const DiscountProductModels = mongoose.model("discount_product", DiscountProductSchema);
+const DiscountProductModels = mongoose.model(
+    "discount_product",
+    DiscountProductSchema
+);
 
 module.exports = DiscountProductModels;

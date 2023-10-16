@@ -1,3 +1,3 @@
-const cartTypeEnum = { Hold: "hold", Deliver: "deliver" };
+const cartTypeEnum = { hold: "hold", deliver: "deliver" };
 
 module.exports = { cartTypeEnum };

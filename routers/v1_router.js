@@ -14,8 +14,14 @@ const {
     getCategory,
 } = require("../controllers/category_controllers.js");
 const { upload } = require("../middleware/file_middleware.js");
-const { updateCart, getCart } = require("../controllers/cart_controller.js");
+const {
+    updateCart,
+    getCart,
+    checkoutCart,
+} = require("../controllers/cart_controller.js");
+const { getDiscount } = require("../controllers/discount_controllers.js");
 
+// Authentication
 router.post("/login", login);
 router.post("/register", upload.single("photo"), register);
 
@@ -29,6 +35,10 @@ router.post("/product/update", upload.array("photo"), updateProduct);
 
 // Cart
 router.post("/cart/update", updateCart);
+router.post("/cart/checkout", checkoutCart);
 router.post("/cart", getCart);
+
+// Discount
+router.get("/discount", getDiscount);
 
 module.exports = router;

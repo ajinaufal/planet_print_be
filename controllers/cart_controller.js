@@ -1,9 +1,14 @@
 const AgregatorCart = require("../agregator/agregation_cart");
 const { cartTypeEnum } = require("../enum/cart_type_enum");
+const { stockTypeEnum, stockCodeEnum } = require("../enum/stock_type_enum");
+const { statusTransactionEnum } = require("../enum/transaction_enum");
 const SecurityHelper = require("../helper/security_helper");
 const CartProductModels = require("../models/databases/cart_product_database");
 const ProductModels = require("../models/databases/product_database");
+const StockProductModels = require("../models/databases/stock_product_database");
+const TransactionModels = require("../models/databases/transaction_database");
 const UsersModels = require("../models/databases/users_database");
+const CheckoutRequest = require("../models/request/checkout_request");
 const UpdateCartRequest = require("../models/request/update_cart_request");
 const { v4: uuidv4 } = require("uuid");
 
@@ -25,7 +30,7 @@ const updateCart = async (req, res) => {
                         const update = await CartProductModels.findOne({
                             token: { $eq: request.token },
                         });
-                        update.status = cartTypeEnum.Hold;
+                        update.status = cartTypeEnum.hold;
                         update.total = request.total;
                         await CartProductModels.updateOne(update);
                     } else {
@@ -33,7 +38,7 @@ const updateCart = async (req, res) => {
                         cart.token = uuidv4();
                         cart.product = product._id;
                         cart.user = user._id;
-                        cart.status = cartTypeEnum.Hold;
+                        cart.status = cartTypeEnum.hold;
                         cart.total = request.total;
                         await cart.save();
                     }
@@ -82,4 +87,65 @@ const getCart = async (req, res) => {
     }
 };
 
-module.exports = { updateCart, getCart };
+const checkoutCart = async (req, res) => {
+    const request = new CheckoutRequest(req.body);
+    if (await SecurityHelper.isSecure(req, res, null)) {
+        try {
+            const carts = await CartProductModels.aggregate(
+                AgregatorCart.checkoutCart(request.cartToken)
+            );
+
+            if (carts.length > 0) {
+                carts.map(async (data) => {
+                    const update = await CartProductModels.findOne({
+                        token: { $eq: data.token },
+                    });
+                    update.status = cartTypeEnum.deliver;
+                    update.updatedAt = new Date();
+                    await CartProductModels.updateOne(update);
+
+                    const stock = new StockProductModels();
+                    stock.token = uuidv4();
+                    stock.product = data.products._id;
+                    stock.type = stockTypeEnum.subt;
+                    stock.code = stockCodeEnum.checkout;
+                    stock.total = data.total;
+                    stock.createdAt = new Date();
+                    await stock.save();
+                });
+
+                const transaction = new TransactionModels();
+                transaction.token = uuidv4();
+                transaction.carts = carts.map((cart) => cart._id);
+                transaction.paid = carts
+                    .map((cart) => {
+                        const discount = cart.discount.map(
+                            (disc) => disc.persen
+                        );
+                        return cart.total * cart.products.price;
+                    })
+                    .reduce(
+                        (accumulator, currentValue) =>
+                            accumulator + currentValue,
+                        0
+                    );
+                transaction.status = statusTransactionEnum.pay;
+                transaction.createdAt = new Date();
+                transaction.updatedAt = new Date();
+                await transaction.save();
+
+                res.status(200).json({
+                    message: "Congratulations, you have successfully checkout.",
+                });
+            } else {
+                res.status(403).json({ message: "Token not found" });
+            }
+        } catch (error) {
+            res.status(500).json({
+                message: `an error occurred in the system checkout, ${error}`,
+            });
+        }
+    }
+};
+
+module.exports = { updateCart, getCart, checkoutCart };

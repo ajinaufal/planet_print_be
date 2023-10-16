@@ -7,29 +7,27 @@ const UpdateProductRequest = require("../models/request/update_product_request")
 const FileHelper = require("../helper/file_helper");
 const CategoryProductModels = require("../models/databases/category_product_database");
 const { basename } = require("path");
+const { stockTypeEnum, stockCodeEnum } = require("../enum/stock_type_enum");
+const ProductRequest = require("../models/request/product_request");
+const AgregatorProduct = require("../agregator/agregation_product");
 
 const getProduct = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
-        var product = [];
         try {
             const request = new ProductRequest(req.body);
-            if (request.token) {
-                product = await ProductModels.find({
-                    token: { $eq: data.token },
-                });
-            } else {
-                product = await ProductModels.findOne({})
-                    .skip((request.page - 1) * request.size)
-                    .limit(request.size);
-            }
+            const skip = (request.page - 1) * request.size;
+            const limit = request.size;
+            const products = await ProductModels.aggregate(
+                AgregatorProduct.getProduct(request.token, skip, limit)
+            );
             res.status(200).json({
                 message:
                     "Congratulations, you have successfully get your data.",
-                data: product,
+                data: products,
             });
         } catch (error) {
             console.error(error);
-            res.status(500).json({ message: error, data: product });
+            res.status(500).json({ message: error });
         }
     }
 };
@@ -62,8 +60,10 @@ const updateProduct = async (req, res) => {
                     const stock = new StockProductModels();
                     stock.product = update._id;
                     stock.type =
-                        request.updateStock < 0 ? "subtraction" : "addition";
-                    stock.code = "update";
+                        request.updateStock < 0
+                            ? stockTypeEnum.subt
+                            : stockTypeEnum.add;
+                    stock.code = stockCodeEnum.update;
                     stock.total = Math.abs(request.updateStock);
                     stock.createdAt = new Date();
                     await stock.save();
