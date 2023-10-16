@@ -9,6 +9,10 @@ const ClusterMessageSchema = new mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         ref: "users",
     },
+    type: {
+        type: String,
+        required: true,
+    },
     createdAt: {
         type: Date,
     },
@@ -17,6 +21,9 @@ const ClusterMessageSchema = new mongoose.Schema({
     },
 });
 
-const MessageModels = mongoose.model("cluster_message", ClusterMessageSchema);
+const ClusterMessageModels = mongoose.model(
+    "cluster_message",
+    ClusterMessageSchema
+);
 
-module.exports = MessageModels;
+module.exports = ClusterMessageModels;

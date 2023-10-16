@@ -20,13 +20,14 @@ const {
     checkoutCart,
 } = require("../controllers/cart_controller.js");
 const { getDiscount } = require("../controllers/discount_controllers.js");
+const { getChat } = require("../controllers/chat_controller.js");
 
 // Authentication
 router.post("/login", login);
 router.post("/register", upload.single("photo"), register);
 
 // Category
-router.post("/product/category", getCategory);
+router.get("/product/category", getCategory);
 router.post("/product/category/update", upload.single("photo"), updateCategory);
 
 // Product
@@ -36,9 +37,12 @@ router.post("/product/update", upload.array("photo"), updateProduct);
 // Cart
 router.post("/cart/update", updateCart);
 router.post("/cart/checkout", checkoutCart);
-router.post("/cart", getCart);
+router.get("/cart", getCart);
 
 // Discount
 router.get("/discount", getDiscount);
+
+// Chat
+router.post("/chat", getChat);
 
 module.exports = router;
