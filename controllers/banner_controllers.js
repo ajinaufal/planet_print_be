@@ -1,3 +1,5 @@
-const getBanners = async (req, res) => {};
+const getBanners = async (req, res) => {
+    
+};
 
 module.exports = { getBanners };

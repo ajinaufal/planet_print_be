@@ -45,4 +45,7 @@ router.get("/discount", getDiscount);
 // Chat
 router.post("/chat", getChat);
 
+// Home
+router.post("/home", getChat);
+
 module.exports = router;
