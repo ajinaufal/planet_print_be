@@ -31,7 +31,7 @@ router.get("/product/category", getCategory);
 router.post("/product/category/update", upload.single("photo"), updateCategory);
 
 // Product
-router.post("/product", getProduct);
+router.get("/product", getProduct);
 router.post("/product/update", upload.array("photo"), updateProduct);
 
 // Cart

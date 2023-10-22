@@ -14,11 +14,11 @@ const AgregatorProduct = require("../agregator/agregation_product");
 const getProduct = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
-            const request = new ProductRequest(req.body);
+            const request = new ProductRequest(req.query);
             const skip = (request.page - 1) * request.size;
             const limit = request.size;
             const products = await ProductModels.aggregate(
-                AgregatorProduct.getProduct(request.token, skip, limit)
+                AgregatorProduct.getProduct(request, skip, limit)
             );
             res.status(200).json({
                 message:

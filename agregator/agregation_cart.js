@@ -89,7 +89,9 @@ class AgregatorCart {
                                     },
                                 },
                             },
-                            photo: "$products.photo",
+                            photo: {
+                                $first: "$products.photo",
+                            },
                             token: {
                                 $first: "$products.token",
                             },

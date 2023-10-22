@@ -5,6 +5,7 @@ const CategoryProductModels = require("../models/databases/category_product_data
 const UpdateCategoryRequest = require("../models/request/update_category_request");
 const { v4: uuidv4 } = require("uuid");
 const { basename } = require("path");
+const AgregationCategory = require("../agregator/agregation_category");
 
 const updateCategory = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, userRoleEnum.Admin)) {
@@ -72,18 +73,13 @@ const updateCategory = async (req, res) => {
 const getCategory = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
-            const categorys = await CategoryProductModels.find({});
-            const data = categorys.map((category) => {
-                return {
-                    id: category.token,
-                    name: category.name,
-                    photo: category.photo,
-                };
-            });
+            const categorys = await CategoryProductModels.aggregate(
+                AgregationCategory.getCategory()
+            );
             res.status(200).json({
                 message:
                     "Congratulations, you have successfully get your data.",
-                data: data,
+                data: categorys,
             });
         } catch (error) {
             res.status(500).json({

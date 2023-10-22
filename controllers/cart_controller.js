@@ -22,18 +22,23 @@ const updateCart = async (req, res) => {
                 token: { $eq: data.token },
             });
             if (user) {
-                const product = await ProductModels.findOne({
-                    token: { $eq: request.productToken },
-                });
-                if (product) {
-                    if (request.token) {
-                        const update = await CartProductModels.findOne({
-                            token: { $eq: request.token },
-                        });
-                        update.status = cartTypeEnum.hold;
-                        update.total = request.total;
-                        await CartProductModels.updateOne(update);
-                    } else {
+                if (request.token) {
+                    const update = await CartProductModels.findOne({
+                        token: { $eq: request.token },
+                    });
+                    update.status = cartTypeEnum.hold;
+                    update.total = update.total + request.total;
+                    const cart = await CartProductModels.updateOne(update);
+                    res.status(200).json({
+                        message:
+                            "Congratulations, you have successfully created your data.",
+                        data: cart,
+                    });
+                } else {
+                    const product = await ProductModels.findOne({
+                        token: { $eq: request.productToken },
+                    });
+                    if (product) {
                         const cart = new CartProductModels();
                         cart.token = uuidv4();
                         cart.product = product._id;
@@ -41,15 +46,15 @@ const updateCart = async (req, res) => {
                         cart.status = cartTypeEnum.hold;
                         cart.total = request.total;
                         await cart.save();
+                        res.status(200).json({
+                            message:
+                                "Congratulations, you have successfully created your data.",
+                        });
+                    } else {
+                        res.status(403).json({
+                            message: "Failed, Product not found.",
+                        });
                     }
-                    res.status(200).json({
-                        message:
-                            "Congratulations, you have successfully created your data.",
-                    });
-                } else {
-                    res.status(403).json({
-                        message: "Failed, Product not found.",
-                    });
                 }
             } else {
                 res.status(403).json({
