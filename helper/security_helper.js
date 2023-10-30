@@ -9,6 +9,12 @@ class SecurityHelper {
         return data;
     }
 
+    static async getUser(req) {
+        const token = this.dataToken(req).token;
+        const user = await UsersModels.findOne({ token: { $eq: token } });
+        return user;
+    }
+
     static async isSecure(req, res, role) {
         try {
             const secretKey = req.headers["secret-key"];

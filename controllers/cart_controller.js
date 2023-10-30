@@ -3,6 +3,7 @@ const { cartTypeEnum } = require("../enum/cart_type_enum");
 const { stockTypeEnum, stockCodeEnum } = require("../enum/stock_type_enum");
 const { statusTransactionEnum } = require("../enum/transaction_enum");
 const SecurityHelper = require("../helper/security_helper");
+const { uniqPrinceHelper } = require("../helper/uniq_price_helper");
 const CartProductModels = require("../models/databases/cart_product_database");
 const ProductModels = require("../models/databases/product_database");
 const StockProductModels = require("../models/databases/stock_product_database");
@@ -72,12 +73,9 @@ const updateCart = async (req, res) => {
 const getCart = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
-            const data = SecurityHelper.dataToken(req);
-            const user = await UsersModels.findOne({
-                token: { $eq: data.token },
-            });
+            const user = await SecurityHelper.getUser(req);
             const cart = await CartProductModels.aggregate(
-                AgregatorCart.getCart(user)
+                AgregatorCart.getCart(user._id)
             );
             res.status(200).json({
                 message:
@@ -96,6 +94,7 @@ const checkoutCart = async (req, res) => {
     const request = new CheckoutRequest(req.body);
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
+            const user = await SecurityHelper.getUser(req);
             const carts = await CartProductModels.aggregate(
                 AgregatorCart.checkoutCart(request.cartToken)
             );
@@ -109,32 +108,29 @@ const checkoutCart = async (req, res) => {
                     update.updatedAt = new Date();
                     await CartProductModels.updateOne(update);
 
-                    const stock = new StockProductModels();
-                    stock.token = uuidv4();
-                    stock.product = data.products._id;
-                    stock.type = stockTypeEnum.subt;
-                    stock.code = stockCodeEnum.checkout;
-                    stock.total = data.total;
-                    stock.createdAt = new Date();
-                    await stock.save();
+                    // const stock = new StockProductModels();
+                    // stock.token = uuidv4();
+                    // stock.product = data.products._id;
+                    // stock.type = stockTypeEnum.subt;
+                    // stock.code = stockCodeEnum.checkout;
+                    // stock.total = data.total;
+                    // stock.createdAt = new Date();
+                    // await stock.save();
                 });
 
                 const transaction = new TransactionModels();
+                transaction.user = user._id;
                 transaction.token = uuidv4();
                 transaction.carts = carts.map((cart) => cart._id);
                 transaction.paid = carts
-                    .map((cart) => {
-                        const discount = cart.discount.map(
-                            (disc) => disc.persen
-                        );
-                        return cart.total * cart.products.price;
-                    })
+                    .map((cart) => cart.total * cart.products.price)
                     .reduce(
                         (accumulator, currentValue) =>
                             accumulator + currentValue,
                         0
                     );
                 transaction.status = statusTransactionEnum.pay;
+                transaction.uniqNumber = uniqPrinceHelper();
                 transaction.createdAt = new Date();
                 transaction.updatedAt = new Date();
                 await transaction.save();

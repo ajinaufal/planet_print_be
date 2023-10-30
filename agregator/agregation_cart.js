@@ -1,8 +1,8 @@
 class AgregatorCart {
-    static getCart(user) {
+    static getCart(id) {
         const today = new Date();
         return [
-            { $match: { user: user._id } },
+            { $match: { user: id } },
             {
                 $lookup: {
                     from: "products",

@@ -9,9 +9,20 @@ const TransactionSchema = new mongoose.Schema({
         type: [mongoose.Schema.Types.ObjectId],
         required: true,
     },
+    user: {
+        type: mongoose.Schema.Types.ObjectId,
+        required: true,
+    },
     paid: {
         type: Number,
         required: true,
+    },
+    uniqNumber: {
+        type: Number,
+        required: true,
+    },
+    paymentProof: {
+        type: String,
     },
     status: {
         type: String,
