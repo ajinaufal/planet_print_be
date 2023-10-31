@@ -107,15 +107,6 @@ const checkoutCart = async (req, res) => {
                     update.status = cartTypeEnum.deliver;
                     update.updatedAt = new Date();
                     await CartProductModels.updateOne(update);
-
-                    // const stock = new StockProductModels();
-                    // stock.token = uuidv4();
-                    // stock.product = data.products._id;
-                    // stock.type = stockTypeEnum.subt;
-                    // stock.code = stockCodeEnum.checkout;
-                    // stock.total = data.total;
-                    // stock.createdAt = new Date();
-                    // await stock.save();
                 });
 
                 const transaction = new TransactionModels();
