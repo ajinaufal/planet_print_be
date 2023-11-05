@@ -1,8 +1,11 @@
+const { cartTypeEnum } = require("../enum/cart_type_enum");
+
 class AgregatorCart {
     static getCart(id) {
         const today = new Date();
         return [
             { $match: { user: id } },
+            { $match: { status: cartTypeEnum.hold } },
             {
                 $lookup: {
                     from: "products",
@@ -171,6 +174,7 @@ class AgregatorCart {
         const today = new Date();
         return [
             { $match: { token: { $in: token } } },
+            { $match: { status: cartTypeEnum.hold } },
             {
                 $lookup: {
                     from: "products",
