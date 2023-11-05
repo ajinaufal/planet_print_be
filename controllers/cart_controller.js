@@ -128,6 +128,11 @@ const checkoutCart = async (req, res) => {
 
                 res.status(200).json({
                     message: "Congratulations, you have successfully checkout.",
+                    data: {
+                        token: transaction.token,
+                        uniq_number: transaction.uniqNumber,
+                        total: transaction.paid + transaction.uniqNumber,
+                    },
                 });
             } else {
                 res.status(403).json({ message: "Token not found" });
