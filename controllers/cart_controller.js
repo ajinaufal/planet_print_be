@@ -106,7 +106,14 @@ const checkoutCart = async (req, res) => {
                     });
                     update.status = cartTypeEnum.deliver;
                     update.updatedAt = new Date();
-                    await CartProductModels.updateOne(update);
+                    await CartProductModels.updateOne(
+                        {
+                            _id: update._id,
+                        },
+                        {
+                            $set: update,
+                        }
+                    );
                 });
 
                 const transaction = new TransactionModels();
