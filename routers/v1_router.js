@@ -21,6 +21,7 @@ const {
 } = require("../controllers/cart_controller.js");
 const { getDiscount } = require("../controllers/discount_controllers.js");
 const { getChat } = require("../controllers/chat_controller.js");
+const { getTransaction } = require("../controllers/transaction_controller.js");
 
 // Authentication
 router.post("/login", login);
@@ -47,5 +48,8 @@ router.post("/chat", getChat);
 
 // Home
 router.post("/home", getChat);
+
+// transaction
+router.get("/transaction", getTransaction);
 
 module.exports = router;

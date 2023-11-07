@@ -58,7 +58,9 @@ class AgregationTransaction {
                                     "$$cartItem",
                                     {
                                         product: {
-                                            photos: "$product.photo",
+                                            photos: {
+                                                $first: "$product.photo",
+                                            },
                                             token: {
                                                 $first: "$product.token",
                                             },
