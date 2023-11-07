@@ -22,11 +22,11 @@ const ProductSchema = new mongoose.Schema({
         type: [String],
         default: [],
     },
-    deskripsi: {
+    description: {
         type: String,
         required: true,
     },
-    spesifikasi: {
+    specification: {
         type: String,
         required: true,
     },

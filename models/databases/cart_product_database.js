@@ -26,6 +26,10 @@ const CartProductSchema = new mongoose.Schema({
     updatedAt: {
         type: Date,
     },
+    createdAt: {
+        type: Date,
+        required: true,
+    },
 });
 
 const CartProductModels = mongoose.model("cart_product", CartProductSchema);

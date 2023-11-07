@@ -4,12 +4,15 @@ const express = require("express");
 const { connectToMongoDB } = require("./config/db_config");
 var v1Router = require("./routers/v1_router.js");
 const bodyParser = require("body-parser");
+const FileHelper = require("./helper/file_helper");
 
 dotenv.config();
 const port = 4000;
 const app = express();
 
 connectToMongoDB();
+
+FileHelper.init();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(bodyParser.json());

@@ -46,6 +46,7 @@ const updateCart = async (req, res) => {
                         cart.user = user._id;
                         cart.status = cartTypeEnum.hold;
                         cart.total = request.total;
+                        cart.createdAt = new Date();
                         await cart.save();
                         res.status(200).json({
                             message:
@@ -107,12 +108,8 @@ const checkoutCart = async (req, res) => {
                     update.status = cartTypeEnum.deliver;
                     update.updatedAt = new Date();
                     await CartProductModels.updateOne(
-                        {
-                            _id: update._id,
-                        },
-                        {
-                            $set: update,
-                        }
+                        { _id: update._id },
+                        { $set: update }
                     );
                 });
 
