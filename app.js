@@ -6,7 +6,13 @@ var v1Router = require("./routers/v1_router.js");
 const bodyParser = require("body-parser");
 const FileHelper = require("./helper/file_helper");
 
-dotenv.config();
+const environment = process.env.NODE_ENV || 'development';
+const envFile = `.env.${environment}`;
+dotenv.config({ path: envFile });
+
+// console.log('env', environment)
+
+
 const port = 4000;
 const app = express();
 
