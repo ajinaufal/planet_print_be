@@ -1,4 +1,9 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
+
+const variantSchema = new mongoose.Schema({
+    title: { type: String },
+    variants: [String],
+});
 
 const ProductSchema = new mongoose.Schema({
     token: {
@@ -14,12 +19,15 @@ const ProductSchema = new mongoose.Schema({
         required: true,
     },
     category: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "category_product",
+        type: String,
         required: true,
     },
     photo: {
         type: [String],
+        default: [],
+    },
+    variants: {
+        type: [variantSchema],
         default: [],
     },
     description: {
@@ -38,6 +46,6 @@ const ProductSchema = new mongoose.Schema({
     },
 });
 
-const ProductModels = mongoose.model("product", ProductSchema);
+const ProductModels = mongoose.model('product', ProductSchema);
 
 module.exports = ProductModels;

@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const StockProductSchema = new mongoose.Schema({
     token: {
@@ -6,8 +6,7 @@ const StockProductSchema = new mongoose.Schema({
         required: true,
     },
     product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "product",
+        type: String,
         required: true,
     },
     type: {
@@ -27,6 +26,6 @@ const StockProductSchema = new mongoose.Schema({
     },
 });
 
-const StockProductModels = mongoose.model("stock_product", StockProductSchema);
+const StockProductModels = mongoose.model('stock_product', StockProductSchema);
 
 module.exports = StockProductModels;

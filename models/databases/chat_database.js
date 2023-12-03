@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
     token: {
@@ -7,17 +7,17 @@ const MessageSchema = new mongoose.Schema({
     },
     cluster: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "cluster_chat",
+        ref: 'cluster_chat',
     },
     users: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
+        ref: 'users',
     },
     product: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: "product",
+        ref: 'product',
     },
-    photo: {
+    image: {
         type: String,
     },
     message: {
@@ -31,6 +31,6 @@ const MessageSchema = new mongoose.Schema({
     },
 });
 
-const MessageModels = mongoose.model("message", MessageSchema);
+const MessageModels = mongoose.model('message', MessageSchema);
 
 module.exports = MessageModels;

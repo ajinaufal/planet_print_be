@@ -1,17 +1,15 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
-const ReviewProductSchema = new mongoose.Schema({
+const ReviewSchema = new mongoose.Schema({
     token: {
         type: String,
         required: true,
     },
     product: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "product",
+        type: String,
     },
     users: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
+        type: String,
     },
     deskripsi: {
         type: String,
@@ -26,6 +24,6 @@ const ReviewProductSchema = new mongoose.Schema({
     },
 });
 
-const ReviewProductModels = mongoose.model("review_product", ReviewProductSchema);
+const ReviewModels = mongoose.model('reviews', ReviewSchema);
 
-module.exports = ReviewProductModels;
+module.exports = ReviewModels;

@@ -1,11 +1,15 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const BannersSchema = new mongoose.Schema({
     token: {
         type: String,
         required: true,
     },
-    banner: {
+    store: {
+        type: String,
+        required: true,
+    },
+    image: {
         type: String,
     },
     createdAt: {
@@ -16,6 +20,6 @@ const BannersSchema = new mongoose.Schema({
     },
 });
 
-const BannersModels = mongoose.model("banners", BannersSchema);
+const BannersModels = mongoose.model('banners', BannersSchema);
 
 module.exports = BannersModels;

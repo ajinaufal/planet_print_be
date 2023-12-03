@@ -1,28 +1,45 @@
-const SecurityHelper = require("../helper/security_helper");
+const SecurityHelper = require('../helper/security_helper');
 
-const ProductModels = require("../models/databases/product_database");
-const StockProductModels = require("../models/databases/stock_product_database");
-const { v4: uuidv4 } = require("uuid");
-const UpdateProductRequest = require("../models/request/update_product_request");
-const FileHelper = require("../helper/file_helper");
-const CategoryProductModels = require("../models/databases/category_product_database");
-const { basename } = require("path");
-const { stockTypeEnum, stockCodeEnum } = require("../enum/stock_type_enum");
-const ProductRequest = require("../models/request/product_request");
-const AgregatorProduct = require("../agregator/agregation_product");
+const ProductModels = require('../models/databases/product_database');
+const StockProductModels = require('../models/databases/stock_product_database');
+const { v4: uuidv4 } = require('uuid');
+const UpdateProductRequest = require('../models/request/update_product_request');
+const FileHelper = require('../helper/file_helper');
+const CategoryProductModels = require('../models/databases/category_product_database');
+const { basename } = require('path');
+const { stockTypeEnum, stockCodeEnum } = require('../enum/stock_type_enum');
+const ProductRequest = require('../models/request/product_request');
+const AgregatorProduct = require('../agregator/agregation_product');
+const CreateProductRequest = require('../models/request/create_product_request');
+
+const create = async (req, res) => {
+    if (await SecurityHelper.isSecure(req, res, null)) {
+        const request = new CreateProductRequest(req);
+        if (request.validation) {
+            const product = new ProductModels();
+            product.token = uuidv4();
+            product.title = request.title;
+            product.price = request.price;
+            product.category = request.tokenCategory;
+            product.photo = (request.file || []).map((file) => `/product/${file.fileName}`);
+            // product.variants = null;
+            product.description = request.description;
+            product.specification = request.specification;
+            product.createdAt = new Date();
+            product.updatedAt = new Date();
+
+            console.log(product);
+        }
+    }
+};
 
 const getProduct = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
             const request = new ProductRequest(req.query);
-            const skip = (request.page - 1) * request.size;
-            const limit = request.size;
-            const products = await ProductModels.aggregate(
-                AgregatorProduct.getProduct(request, skip, limit)
-            );
+            const products = await ProductModels.aggregate(AgregatorProduct.getProduct(request));
             res.status(200).json({
-                message:
-                    "Congratulations, you have successfully get your data.",
+                message: 'Congratulations, you have successfully get your data.',
                 data: products,
             });
         } catch (error) {
@@ -59,25 +76,18 @@ const updateProduct = async (req, res) => {
                 if (request.updateStock) {
                     const stock = new StockProductModels();
                     stock.product = update._id;
-                    stock.type =
-                        request.updateStock < 0
-                            ? stockTypeEnum.subt
-                            : stockTypeEnum.add;
+                    stock.type = request.updateStock < 0 ? stockTypeEnum.subt : stockTypeEnum.add;
                     stock.code = stockCodeEnum.update;
                     stock.total = Math.abs(request.updateStock);
                     stock.createdAt = new Date();
                     await stock.save();
                 }
                 res.status(200).json({
-                    message:
-                        "Congratulations, you have successfully update your data.",
+                    message: 'Congratulations, you have successfully update your data.',
                 });
             } else {
                 const isRequired =
-                    request.title &&
-                    request.price &&
-                    request.deskripsi &&
-                    request.updateStock;
+                    request.title && request.price && request.deskripsi && request.updateStock;
                 if (isRequired) {
                     const product = new ProductModels();
                     product.token = uuidv4();
@@ -89,9 +99,7 @@ const updateProduct = async (req, res) => {
                     product.updatedAt = new Date();
 
                     if (request.file) {
-                        product.photo = request.file.map(
-                            (file) => `/product/${file.fileName}`
-                        );
+                        product.photo = request.file.map((file) => `/product/${file.fileName}`);
                     }
 
                     if (request.tokenCategory) {
@@ -114,24 +122,20 @@ const updateProduct = async (req, res) => {
                         const stock = new StockProductModels();
                         stock.token = uuidv4();
                         stock.product = product._id;
-                        stock.type =
-                            request.updateStock < 0
-                                ? "subtraction"
-                                : "addition";
-                        stock.code = "update";
+                        stock.type = request.updateStock < 0 ? 'subtraction' : 'addition';
+                        stock.code = 'update';
                         stock.total = Math.abs(request.updateStock);
                         stock.createdAt = new Date();
                         await stock.save();
                     }
 
                     res.status(200).json({
-                        message:
-                            "Congratulations, you have successfully update your data.",
+                        message: 'Congratulations, you have successfully update your data.',
                     });
                 } else {
                     res.status(403).json({
                         message:
-                            "Pay attention to your input, there are some required things you missed.",
+                            'Pay attention to your input, there are some required things you missed.',
                     });
                 }
             }
@@ -142,6 +146,10 @@ const updateProduct = async (req, res) => {
             });
         }
     }
+};
+
+const deleteProduct = async (req, res) => {
+    const request = new ProductRequest(req.params);
 };
 
 module.exports = { getProduct, updateProduct };

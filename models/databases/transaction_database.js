@@ -1,31 +1,47 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose');
 
 const TransactionSchema = new mongoose.Schema({
     token: {
         type: String,
         required: true,
     },
-    carts: {
-        type: [mongoose.Schema.Types.ObjectId],
-        required: true,
-    },
     user: {
-        type: mongoose.Schema.Types.ObjectId,
+        type: String,
         required: true,
     },
-    paid: {
+    store: {
+        type: String,
+        required: true,
+    },
+    carts: {
+        type: [String],
+        required: true,
+    },
+    discount: {
+        type: String,
+        required: true,
+    },
+    cost: {
         type: Number,
         required: true,
     },
-    uniqNumber: {
+    uniq: {
         type: Number,
         required: true,
     },
-    paymentProof: {
+    total: {
+        type: Number,
+        required: true,
+    },
+    image: {
         type: String,
     },
     status: {
         type: String,
+        required: true,
+    },
+    approval: {
+        type: Boolean,
         required: true,
     },
     createdAt: {
@@ -36,6 +52,6 @@ const TransactionSchema = new mongoose.Schema({
     },
 });
 
-const TransactionModels = mongoose.model("transaction", TransactionSchema);
+const TransactionModels = mongoose.model('transactions', TransactionSchema);
 
 module.exports = TransactionModels;
