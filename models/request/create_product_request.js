@@ -7,12 +7,12 @@ class CreateProductRequest {
         this.description = req.body.description || null;
         this.specification = req.body.specification || null;
         this.stock = req.body.stock || null;
-        this.tokenCategory = req.body.token_category || null;
-        this.file = req.files ? req.files.map((file) => new FileRequest(file)) : [];
+        this.category = req.body.category || null;
+        this.variants = req.body.variants || [];
     }
 
     validation() {
-        return this.title && this.price && this.tokenCategory;
+        return this.title && this.price && this.category && this.stock;
     }
 }
 

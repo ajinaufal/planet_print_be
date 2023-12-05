@@ -11,10 +11,13 @@ const { stockTypeEnum, stockCodeEnum } = require('../enum/stock_type_enum');
 const ProductRequest = require('../models/request/product_request');
 const AgregatorProduct = require('../agregator/agregation_product');
 const CreateProductRequest = require('../models/request/create_product_request');
+const { fileService } = require('../middleware/file_middleware');
 
-const create = async (req, res) => {
+const productCreate = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
+        const field = await fileService({ req, res, field: [{ name: 'images', maxCount: 5 }] });
         const request = new CreateProductRequest(req);
+
         if (request.validation) {
             const product = new ProductModels();
             product.token = uuidv4();
@@ -22,13 +25,40 @@ const create = async (req, res) => {
             product.price = request.price;
             product.category = request.tokenCategory;
             product.photo = (request.file || []).map((file) => `/product/${file.fileName}`);
-            // product.variants = null;
             product.description = request.description;
             product.specification = request.specification;
             product.createdAt = new Date();
             product.updatedAt = new Date();
+            product.category = request.category;
 
-            console.log(product);
+            if ((field.images || []).length > 0) {
+                product.photo = field.images.map((file) => `/product/${file.fileName}`);
+            }
+
+            await product.save().then((prod) => {
+                prod.photo.map((phot) =>
+                    FileHelper.move(
+                        `./public/temporary/${basename(phot)}`,
+                        `./public/product/${basename(phot)}`
+                    )
+                );
+            });
+
+            if (request.stock) {
+                const stock = new StockProductModels();
+                stock.token = uuidv4();
+                stock.product = product.token;
+                stock.type = request.stock < 0 ? stockTypeEnum.subt : stockTypeEnum.add;
+                stock.code = stockCodeEnum.update;
+                stock.total = Math.abs(request.stock);
+                stock.createdAt = new Date();
+                await stock.save();
+            }
+
+            res.status(200).json({
+                message: 'Congratulations, you have successfully create your data.',
+                data: product,
+            });
         }
     }
 };
@@ -152,4 +182,4 @@ const deleteProduct = async (req, res) => {
     const request = new ProductRequest(req.params);
 };
 
-module.exports = { getProduct, updateProduct };
+module.exports = { productCreate };

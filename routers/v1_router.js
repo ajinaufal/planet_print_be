@@ -12,16 +12,16 @@ const { getTransaction } = require('../controllers/transaction_controller.js');
 
 // Authentication
 router.post('/login', login);
-router.post('/register', upload.single('photo'), register);
+// router.post('/register', upload.single('photo'), register);
 
 // Category
 router.get('/product/category', getCategory);
-router.post('/product/category/update', upload.single('photo'), updateCategory);
+// router.post('/product/category/update', upload.single('photo'), updateCategory);
 
 // Product
-router.get('/product', getProduct);
-router.post('/product/update', upload.array('photo'), updateProduct);
-router.delete('/product/:id/delete', );
+// router.get('/product', getProduct);
+// router.post('/product/update', upload.array('photo'), updateProduct);
+// router.delete('/product/:id/delete', );
 
 // Cart
 router.post('/cart/update', updateCart);
