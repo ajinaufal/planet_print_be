@@ -1,11 +1,14 @@
 const mongoose = require('mongoose');
 
-const ImageSchema = new mongoose.Schema({
+const FileSchema = new mongoose.Schema({
     token: {
         type: String,
         required: true,
     },
     path: {
+        type: String,
+    },
+    basename: {
         type: String,
     },
     name: {
@@ -14,7 +17,7 @@ const ImageSchema = new mongoose.Schema({
     type: {
         type: String,
     },
-    status: {
+    size: {
         type: String,
     },
     createdAt: {
@@ -23,6 +26,6 @@ const ImageSchema = new mongoose.Schema({
     },
 });
 
-const ImageModels = mongoose.model('images', ImageSchema);
+const FilesModels = mongoose.model('files', FileSchema);
 
-module.exports = ImageModels;
+module.exports = FilesModels;

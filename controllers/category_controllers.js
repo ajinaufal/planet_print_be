@@ -1,11 +1,11 @@
-const { userRoleEnum } = require("../enum/role_enum");
-const FileHelper = require("../helper/file_helper");
-const SecurityHelper = require("../helper/security_helper");
-const CategoryProductModels = require("../models/databases/category_product_database");
-const UpdateCategoryRequest = require("../models/request/update_category_request");
-const { v4: uuidv4 } = require("uuid");
-const { basename } = require("path");
-const AgregationCategory = require("../agregator/agregation_category");
+const { userRoleEnum } = require('../enum/role_enum');
+const FileHelper = require('../helper/file_helper');
+const SecurityHelper = require('../helper/security_helper');
+const CategoryProductModels = require('../models/databases/category_product_database');
+const UpdateCategoryRequest = require('../models/request/update_category_request');
+const { v4: uuidv4 } = require('uuid');
+const { basename } = require('path');
+const AgregationCategory = require('../agregator/agregation_category');
 
 const updateCategory = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, userRoleEnum.Admin)) {
@@ -27,8 +27,7 @@ const updateCategory = async (req, res) => {
                 update.updatedAt = new Date();
                 await CategoryProductModels.updateOne(update);
                 res.status(200).json({
-                    message:
-                        "Congratulations, you have successfully updated your data.",
+                    message: 'Congratulations, you have successfully updated your data.',
                     data: { name: update.name, photo: update.photo },
                 });
             } else {
@@ -44,14 +43,11 @@ const updateCategory = async (req, res) => {
                         .then((data) =>
                             FileHelper.move(
                                 `./public/temporary/${basename(data.photo)}`,
-                                `./public/category_product/${basename(
-                                    data.photo
-                                )}`
+                                `./public/category_product/${basename(data.photo)}`
                             )
                         );
                     res.status(200).json({
-                        message:
-                            "Congratulations, you have successfully created your data.",
+                        message: 'Congratulations, you have successfully created your data.',
                         data: category,
                     });
                 } else {
@@ -77,8 +73,7 @@ const getCategory = async (req, res) => {
                 AgregationCategory.getCategory()
             );
             res.status(200).json({
-                message:
-                    "Congratulations, you have successfully get your data.",
+                message: 'Congratulations, you have successfully get your data.',
                 data: categorys,
             });
         } catch (error) {
@@ -89,4 +84,4 @@ const getCategory = async (req, res) => {
     }
 };
 
-module.exports = { updateCategory, getCategory };
+module.exports = { getCategory };

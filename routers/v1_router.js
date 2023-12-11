@@ -11,7 +11,7 @@ const { getChat } = require('../controllers/chat_controller.js');
 const { getTransaction } = require('../controllers/transaction_controller.js');
 
 // Authentication
-router.post('/login', login);
+router.post('/login', login); 
 // router.post('/register', upload.single('photo'), register);
 
 // Category

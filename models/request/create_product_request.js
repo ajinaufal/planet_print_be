@@ -8,7 +8,7 @@ class CreateProductRequest {
         this.specification = req.body.specification || null;
         this.stock = req.body.stock || null;
         this.category = req.body.category || null;
-        this.variants = req.body.variants || [];
+        // this.variants = req.body.variants || [];
     }
 
     validation() {
