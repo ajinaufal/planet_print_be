@@ -18,68 +18,68 @@ const FileRequest = require('../models/request/file_request');
 const productCreate = async (req, res) => {
     try {
         if (await SecurityHelper.isSecure(req, res, null)) {
+            const fileImage = [];
             const field = await fileService({ req, res, field: [{ name: 'images', maxCount: 5 }] });
-            console.log(req.body);
             const images = (field.images || []).map((image) => new FileRequest(image));
             const request = new CreateProductRequest(req);
+            const validations = request.validation();
 
-            console.log(request.validation());
+            if (validations.length > 0) {
+                await Promise.all(
+                    (images || []).map(async (image) => {
+                        console.log('image : ', image);
+                        const file = new FilesModels();
+                        file.token = image.path.split('/').pop().split('.')[0];
+                        file.path = `/public/product/${image.fileName}`;
+                        file.name = image.fileName;
+                        file.type = image.mimeType;
+                        file.size = image.size;
+                        file.basename = image.oldName;
+                        console.log('file : ', file);
 
-            if (request.validation()) {
+                        await file.save();
+
+                        fileImage.push(file.token);
+
+                        FileHelper.move(`./${image.path}`, `./public/product/${file.name}`);
+                    })
+                );
+
                 const product = new ProductModels();
                 product.token = uuidv4();
                 product.title = request.title;
                 product.price = request.price;
                 product.category = request.tokenCategory;
-                product.photo = images.map((image) => image.path.split('.')[0]);
+                product.photo = fileImage;
                 product.description = request.description;
                 product.specification = request.specification;
                 product.createdAt = new Date();
                 product.updatedAt = new Date();
                 product.category = request.category;
+                await product.save();
 
-                console.log('test : ', product);
-                // await product.save();
-
-                // if (images.length > 0) {
-                //     await images.map(async (image) => {
-                //         const file = new FilesModels();
-                //         file.token = image.path.split('.')[0];
-                //         file.path = image.path;
-                //         file.name = image.fileName;
-                //         file.type = image.mimeType;
-                //         file.size = image.size;
-                //         file.basename = image.oldName;
-                //         await file.save();
-
-                //         FileHelper.move(`./${image.path}`, `./public/product/${image.name}`);
-                //     });
-                // }
-
-                // if (request.stock) {
-                //     const stock = new StockProductModels();
-                //     stock.token = uuidv4();
-                //     stock.product = product.token;
-                //     stock.type = request.stock < 0 ? stockTypeEnum.subt : stockTypeEnum.add;
-                //     stock.code = stockCodeEnum.update;
-                //     stock.total = Math.abs(request.stock);
-                //     stock.createdAt = new Date();
-                //     await stock.save();
-                // }
+                if (request.stock) {
+                    const stock = new StockProductModels();
+                    stock.token = uuidv4();
+                    stock.product = product.token;
+                    stock.type = request.stock < 0 ? stockTypeEnum.subt : stockTypeEnum.add;
+                    stock.code = stockCodeEnum.update;
+                    stock.total = Math.abs(request.stock);
+                    stock.createdAt = new Date();
+                    await stock.save();
+                }
 
                 res.status(200).json({
                     message: 'Congratulations, you have successfully create your data.',
                     data: { id: product.token },
                 });
+            } else {
+                res.status(403).json({ message: validations[0] });
             }
-            res.status(403).json({
-                message: 'Congratulations, you have successfully create your data.',
-            });
         }
     } catch (error) {
-        res.status(500).json({
-            message: `Error create product : ${error}`,
-        });
+        console.error(`Error create product : ${error}`);
+        res.status(500).json({ message: `Error create product : ${error}` });
     }
 };
 
@@ -87,7 +87,11 @@ const getProduct = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
             const request = new ProductRequest(req.query);
-            const products = await ProductModels.aggregate(AgregatorProduct.getProduct(request));
+            const products = await ProductModels.aggregate(
+                AgregatorProduct.getProduct(request),
+                { allowDiskUse: true },
+                { explain: true }
+            );
             res.status(200).json({
                 message: 'Congratulations, you have successfully get your data.',
                 data: products,
@@ -202,4 +206,4 @@ const deleteProduct = async (req, res) => {
     const request = new ProductRequest(req.params);
 };
 
-module.exports = { productCreate };
+module.exports = { productCreate, getProduct };

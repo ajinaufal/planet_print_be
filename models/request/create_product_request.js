@@ -12,7 +12,21 @@ class CreateProductRequest {
     }
 
     validation() {
-        return this.title && this.price && this.category && this.stock;
+        const message = [];
+        if (!this.title || !(this.title instanceof String)) {
+            message.push('Title input must be required and string');
+        }
+        if (!this.price || !(this.price instanceof Number)) {
+            message.push('Price input must be required and number');
+        }
+
+        if (!this.category || !(this.category instanceof String)) {
+            message.push('Category input must be required and string');
+        }
+        if (!this.stock || !(this.stock instanceof Number)) {
+            message.push('Stock input must be required and number');
+        }
+        return message;
     }
 }
 

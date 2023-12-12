@@ -17,7 +17,7 @@ class AgregatorProduct {
                 {
                     $lookup: {
                         from: 'stock_products',
-                        localField: '_id',
+                        localField: 'token',
                         foreignField: 'product',
                         as: 'stocks',
                     },
@@ -26,22 +26,56 @@ class AgregatorProduct {
                     $lookup: {
                         from: 'category_products',
                         localField: 'category',
-                        foreignField: '_id',
-                        as: 'categorys',
+                        foreignField: 'token',
+                        as: 'category',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'files',
+                        localField: 'photo',
+                        foreignField: 'token',
+                        as: 'photos',
+                    },
+                },
+                {
+                    $lookup: {
+                        from: 'variants',
+                        localField: 'variants',
+                        foreignField: 'token',
+                        as: 'variant',
                     },
                 },
                 {
                     $group: {
                         _id: '$_id',
-                        token: { $first: '$token' },
-                        title: { $first: '$title' },
-                        price: { $first: '$price' },
-                        photo: { $first: '$photo' },
-                        deskripsi: { $first: '$deskripsi' },
-                        spesifikasi: { $first: '$spesifikasi' },
-                        updatedAt: { $first: '$updatedAt' },
-                        stock: { $first: '$stocks' },
-                        categorys: { $first: '$categorys' },
+                        token: {
+                            $first: '$token',
+                        },
+                        photo: {
+                            $first: '$photos',
+                        },
+                        variant: {
+                            $first: '$variants',
+                        },
+                        title: {
+                            $first: '$title',
+                        },
+                        price: {
+                            $first: '$price',
+                        },
+                        description: {
+                            $first: '$description',
+                        },
+                        specification: {
+                            $first: '$specification',
+                        },
+                        stock: {
+                            $first: '$stocks',
+                        },
+                        category: {
+                            $first: '$category',
+                        },
                         sold: {
                             $push: {
                                 $sum: {
@@ -82,26 +116,41 @@ class AgregatorProduct {
                                 },
                             },
                         },
+                        updated_at: {
+                            $first: '$updatedAt',
+                        },
+                        created_at: {
+                            $first: '$createdAt',
+                        },
                     },
                 },
                 {
                     $project: {
                         _id: 0,
                         token: 1,
+                        variant: 1,
                         photo: 1,
                         title: 1,
                         price: 1,
-                        deskripsi: 1,
-                        spesifikasi: 1,
-                        sold: { $arrayElemAt: ['$sold', 0] },
-                        category: { $arrayElemAt: ['$categorys', 0] },
-                        stocks: { $arrayElemAt: ['$stocks', 0] },
-                        updatedAt: 1,
+                        description: 1,
+                        specification: 1,
+                        sold: {
+                            $arrayElemAt: ['$sold', 0],
+                        },
+                        category: {
+                            $arrayElemAt: ['$category', 0],
+                        },
+                        stocks: {
+                            $arrayElemAt: ['$stocks', 0],
+                        },
                     },
                 },
                 {
                     $project: {
-                        stock: 0,
+                        'photo._id': 0,
+                        'photo.__v': 0,
+                        'variant._id': 0,
+                        'variant.__v': 0,
                         'category._id': 0,
                         'category.__v': 0,
                     },
