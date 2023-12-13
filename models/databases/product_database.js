@@ -38,6 +38,10 @@ const ProductSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    isDelete: {
+        type: Boolean,
+        required: true,
+    },
     createdAt: {
         type: Date,
     },

@@ -203,7 +203,43 @@ const updateProduct = async (req, res) => {
 };
 
 const deleteProduct = async (req, res) => {
-    const request = new ProductRequest(req.params);
+    const request = new ProductRequest(req.body);
+    if (request.token) {
+        const products = await ProductModels.aggregate(
+            AgregatorProduct.getProduct(request),
+            { allowDiskUse: true },
+            { explain: true }
+        );
+
+        products.map(async (product) => {
+            product.photo.map(async (image) => {
+                FileHelper.delete(`.${image.path}`);
+
+                await FilesModels.deleteOne({ token: { $eq: image.token } });
+            });
+
+            const rest = product.stocks - product.sold;
+
+            if (rest > 0) {
+                const stock = new StockProductModels();
+                stock.token = uuidv4();
+                stock.product = product.token;
+                stock.type = request.stock < 0 ? stockTypeEnum.subt : stockTypeEnum.add;
+                stock.code = stockCodeEnum.update;
+                stock.total = Math.abs(request.stock);
+                stock.createdAt = new Date();
+                await stock.save();
+            }
+
+            await ProductModels.deleteOne({ token: { $eq: [product.token] } });
+        });
+
+        res.status(200).json({
+            message: 'Congratulations, you have successfully get your data.',
+            data: products,
+        });
+    }
+    res.status(500).json({ message: '' });
 };
 
-module.exports = { productCreate, getProduct };
+module.exports = { productCreate, getProduct, deleteProduct };
