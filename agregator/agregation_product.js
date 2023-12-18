@@ -1,6 +1,7 @@
 class AgregatorProduct {
     static getProduct(request) {
         const pipeLine = [];
+        pipeLine.push({ $match: { isDelete: { $eq: false } } });
         if (request.token) {
             pipeLine.push({ $match: { token: { $eq: request.token } } });
         }

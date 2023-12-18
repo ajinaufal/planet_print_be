@@ -1,19 +1,19 @@
 const SecurityHelper = require('../helper/security_helper');
-
 const ProductModels = require('../models/databases/product_database');
 const StockProductModels = require('../models/databases/stock_product_database');
-const { v4: uuidv4 } = require('uuid');
 const UpdateProductRequest = require('../models/request/update_product_request');
 const FileHelper = require('../helper/file_helper');
 const CategoryProductModels = require('../models/databases/category_product_database');
-const { basename } = require('path');
-const { stockTypeEnum, stockCodeEnum } = require('../enum/stock_type_enum');
 const ProductRequest = require('../models/request/product_request');
 const AgregatorProduct = require('../agregator/agregation_product');
 const CreateProductRequest = require('../models/request/create_product_request');
-const { fileService } = require('../middleware/file_middleware');
 const FilesModels = require('../models/databases/image_database');
 const FileRequest = require('../models/request/file_request');
+
+const { v4: uuidv4 } = require('uuid');
+const { basename } = require('path');
+const { stockTypeEnum, stockCodeEnum } = require('../enum/stock_type_enum');
+const { fileService } = require('../middleware/file_middleware');
 
 const productCreate = async (req, res) => {
     try {
@@ -27,7 +27,6 @@ const productCreate = async (req, res) => {
             if (validations.length > 0) {
                 await Promise.all(
                     (images || []).map(async (image) => {
-                        console.log('image : ', image);
                         const file = new FilesModels();
                         file.token = image.path.split('/').pop().split('.')[0];
                         file.path = `/public/product/${image.fileName}`;
@@ -35,7 +34,6 @@ const productCreate = async (req, res) => {
                         file.type = image.mimeType;
                         file.size = image.size;
                         file.basename = image.oldName;
-                        console.log('file : ', file);
 
                         await file.save();
 
@@ -56,6 +54,7 @@ const productCreate = async (req, res) => {
                 product.createdAt = new Date();
                 product.updatedAt = new Date();
                 product.category = request.category;
+                product.isDelete = false;
                 await product.save();
 
                 if (request.stock) {
@@ -92,14 +91,42 @@ const getProduct = async (req, res) => {
                 { allowDiskUse: true },
                 { explain: true }
             );
+            const totalItem = await ProductModels.find({ isDelete: false }).countDocuments();
+            const totalPage = totalItem > 0 ? Math.ceil(totalItem / request.size) : 1;
             res.status(200).json({
                 message: 'Congratulations, you have successfully get your data.',
                 data: products,
+                pagination: {
+                    size: request.size,
+                    total_item: totalItem,
+                    page: request.page,
+                    total_page: totalPage,
+                },
             });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: error });
         }
+    }
+};
+
+const deleteProduct = async (req, res) => {
+    const request = new ProductRequest(req.body);
+    try {
+        if (request.token) {
+            await ProductModels.findOneAndUpdate(
+                { token: { $eq: request.token } },
+                { isDelete: true }
+            );
+
+            res.status(200).json({
+                message: `Congratulations, you have successfully delete product ${request.token}`,
+            });
+        } else {
+            res.status(403).json({ message: 'id not found' });
+        }
+    } catch (error) {
+        res.status(500).json({ message: `Error delete product : ${error}` });
     }
 };
 
@@ -200,46 +227,6 @@ const updateProduct = async (req, res) => {
             });
         }
     }
-};
-
-const deleteProduct = async (req, res) => {
-    const request = new ProductRequest(req.body);
-    if (request.token) {
-        const products = await ProductModels.aggregate(
-            AgregatorProduct.getProduct(request),
-            { allowDiskUse: true },
-            { explain: true }
-        );
-
-        products.map(async (product) => {
-            product.photo.map(async (image) => {
-                FileHelper.delete(`.${image.path}`);
-
-                await FilesModels.deleteOne({ token: { $eq: image.token } });
-            });
-
-            const rest = product.stocks - product.sold;
-
-            if (rest > 0) {
-                const stock = new StockProductModels();
-                stock.token = uuidv4();
-                stock.product = product.token;
-                stock.type = request.stock < 0 ? stockTypeEnum.subt : stockTypeEnum.add;
-                stock.code = stockCodeEnum.update;
-                stock.total = Math.abs(request.stock);
-                stock.createdAt = new Date();
-                await stock.save();
-            }
-
-            await ProductModels.deleteOne({ token: { $eq: [product.token] } });
-        });
-
-        res.status(200).json({
-            message: 'Congratulations, you have successfully get your data.',
-            data: products,
-        });
-    }
-    res.status(500).json({ message: '' });
 };
 
 module.exports = { productCreate, getProduct, deleteProduct };

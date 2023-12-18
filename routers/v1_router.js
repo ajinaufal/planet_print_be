@@ -2,7 +2,7 @@ var express = require('express');
 var router = express.Router();
 
 const { register, login } = require('../controllers/authentication_controller.js');
-const { getProduct, updateProduct } = require('../controllers/product_controller.js');
+// const { getProduct, updateProduct } = require('../controllers/product_controller.js');
 const { updateCategory, getCategory } = require('../controllers/category_controllers.js');
 const { upload } = require('../middleware/file_middleware.js');
 const { updateCart, getCart, checkoutCart } = require('../controllers/cart_controller.js');
