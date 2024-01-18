@@ -34,15 +34,11 @@ const upload = multer({
     fileFilter: filter,
 });
 
-const fileService = ({ req, res, type, field }) => {
+const fileService = ({ req, res, field }) => {
     let services;
-    const fields = [
-        { name: 'images', maxCount: 5 },
-        { name: 'documents', maxCount: 2 },
-    ];
 
-    if (fields.length > 0) {
-        services = upload.fields(fields);
+    if (field.length > 0) {
+        services = upload.fields(field);
     } else {
         services = upload.none();
     }
@@ -50,7 +46,7 @@ const fileService = ({ req, res, type, field }) => {
     return new Promise((resolve, reject) => {
         services(req, res, async (err) => {
             if (err) throw reject(new Error(`${err}`));
-            if (fields.length > 0) resolve(req.files);
+            if (field.length > 0) resolve(req.files);
         });
     });
 };

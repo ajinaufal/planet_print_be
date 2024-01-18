@@ -3,7 +3,7 @@ const ProductModels = require('../models/databases/product_database');
 const StockProductModels = require('../models/databases/stock_product_database');
 const UpdateProductRequest = require('../models/request/update_product_request');
 const FileHelper = require('../helper/file_helper');
-const CategoryProductModels = require('../models/databases/category_product_database');
+const CategoryProductModels = require('../models/databases/category_database');
 const ProductRequest = require('../models/request/product_request');
 const AgregatorProduct = require('../agregator/agregation_product');
 const CreateProductRequest = require('../models/request/create_product_request');
@@ -114,10 +114,29 @@ const deleteProduct = async (req, res) => {
     const request = new ProductRequest(req.body);
     try {
         if (request.token) {
-            await ProductModels.findOneAndUpdate(
-                { token: { $eq: request.token } },
-                { isDelete: true }
-            );
+            const product = await ProductModels.findOne({ token: { $eq: request.token } });
+            const images = await FilesModels.find({ token: { $in: product.photo } });
+
+            images.map(async (image) => {
+                await FilesModels.deleteOne({ token: { $eq: image.token } }).then((result) =>
+                    FileHelper.delete(`.${image.path}`)
+                );
+            });
+
+            const rest = product.stocks - product.sold;
+
+            if (rest > 0) {
+                const stock = new StockProductModels();
+                stock.token = uuidv4();
+                stock.product = product.token;
+                stock.type = request.stock < 0 ? stockTypeEnum.subt : stockTypeEnum.add;
+                stock.code = stockCodeEnum.update;
+                stock.total = Math.abs(request.stock);
+                stock.createdAt = new Date();
+                await stock.save();
+            }
+
+            await ProductModels.deleteOne({ token: { $eq: product.token } });
 
             res.status(200).json({
                 message: `Congratulations, you have successfully delete product ${request.token}`,

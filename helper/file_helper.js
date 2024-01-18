@@ -8,8 +8,8 @@ class FileHelper {
         if (!fs.existsSync('./public/avatar')) {
             fs.mkdirSync('./public/avatar', { recursive: true });
         }
-        if (!fs.existsSync('./public/category_product')) {
-            fs.mkdirSync('./public/category_product', { recursive: true });
+        if (!fs.existsSync('./public/category')) {
+            fs.mkdirSync('./public/category', { recursive: true });
         }
         if (!fs.existsSync('./public/product')) {
             fs.mkdirSync('./public/product', { recursive: true });

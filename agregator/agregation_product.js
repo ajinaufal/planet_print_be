@@ -11,7 +11,9 @@ class AgregatorProduct {
             });
         }
 
-        pipeLine.push(...[{ $skip: request.skip }, { $limit: request.size }]);
+        if (request.skip) pipeLine.push({ $skip: request.skip });
+
+        if (request.size) pipeLine.push({ $skip: request.size });
 
         pipeLine.push(
             ...[

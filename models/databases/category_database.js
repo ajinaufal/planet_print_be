@@ -15,7 +15,9 @@ const CategoryProductSchema = new mongoose.Schema({
     },
     store: {
         type: String,
-        required: true,
+    },
+    isActive: {
+        type: Boolean,
     },
     createdAt: {
         type: Date,
@@ -25,6 +27,6 @@ const CategoryProductSchema = new mongoose.Schema({
     },
 });
 
-const CategoryProductModels = mongoose.model('category_product', CategoryProductSchema);
+const CategoryModels = mongoose.model('category_product', CategoryProductSchema);
 
-module.exports = CategoryProductModels;
+module.exports = CategoryModels;
