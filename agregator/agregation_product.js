@@ -2,18 +2,18 @@ class AgregatorProduct {
     static getProduct(request) {
         const pipeLine = [];
         pipeLine.push({ $match: { isDelete: { $eq: false } } });
+
         if (request.token) {
             pipeLine.push({ $match: { token: { $eq: request.token } } });
         }
+
         if (request.filter) {
             pipeLine.push({
                 $match: { title: { $regex: new RegExp(request.filter, 'i') } },
             });
         }
 
-        if (request.skip) pipeLine.push({ $skip: request.skip });
-
-        if (request.size) pipeLine.push({ $skip: request.size });
+        pipeLine.push({ $skip: request.size * (request.page - 1) });
 
         pipeLine.push(
             ...[

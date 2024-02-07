@@ -172,4 +172,5 @@ const deleteCategory = async (req, res) => {
         res.status(403).json({ message: 'id not found' });
     }
 };
+
 module.exports = { getCategory, createCategory, deleteCategory, updateCategory };

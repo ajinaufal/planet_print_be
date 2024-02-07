@@ -6,7 +6,6 @@ class ProductRequest {
         this.filter = data.filter || null;
         this.skip = (this.page - 1) * this.size;
     }
-
 }
 
 module.exports = ProductRequest;

@@ -86,6 +86,7 @@ const getProduct = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
             const request = new ProductRequest(req.query);
+            console.log(request);
             const products = await ProductModels.aggregate(
                 AgregatorProduct.getProduct(request),
                 { allowDiskUse: true },
@@ -154,22 +155,25 @@ const updateProduct = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
             if (request.token) {
-                const update = await ProductModels.findOne({
+                const prorduct = await ProductModels.findOne({
                     token: { $eq: request.token },
                 });
 
-                if (request.title) update.title = request.title;
-                if (request.price) update.price = request.price;
-                if (request.deskripsi) update.deskripsi = request.deskripsi;
-                if (request.spesifikasi) {
-                    update.spesifikasi = request.spesifikasi;
-                }
-                update.updatedAt = new Date();
-                if (request.tokenCategory) {
+                const imagesDelete = await FilesModels.find({
+                    token: { $in: request.delete_photos },
+                });
+
+                if (request.title) prorduct.title = request.title;
+                if (request.price) prorduct.price = request.price;
+                if (request.description) prorduct.description = request.description;
+                if (request.spesification) prorduct.specification = request.spesification;
+                prorduct.updatedAt = new Date();
+
+                if (request.category) {
                     const category = await CategoryProductModels.findOne({
-                        token: { $eq: request.tokenCategory },
+                        token: { $eq: request.category },
                     });
-                    update.category = category._id;
+                    prorduct.category = category._id;
                 }
 
                 await ProductModels.updateOne(update);
@@ -186,61 +190,11 @@ const updateProduct = async (req, res) => {
                     message: 'Congratulations, you have successfully update your data.',
                 });
             } else {
-                const isRequired =
-                    request.title && request.price && request.deskripsi && request.updateStock;
-                if (isRequired) {
-                    const product = new ProductModels();
-                    product.token = uuidv4();
-                    product.title = request.title;
-                    product.price = request.price;
-                    product.deskripsi = request.deskripsi;
-                    product.spesifikasi = request.spesifikasi;
-                    product.createdAt = new Date();
-                    product.updatedAt = new Date();
-
-                    if (request.file) {
-                        product.photo = request.file.map((file) => `/product/${file.fileName}`);
-                    }
-
-                    if (request.tokenCategory) {
-                        const category = await CategoryProductModels.findOne({
-                            token: { $eq: request.tokenCategory },
-                        });
-                        product.category = category._id;
-                    }
-
-                    await product.save().then((prod) => {
-                        prod.photo.map((phot) =>
-                            FileHelper.move(
-                                `./public/temporary/${basename(phot)}`,
-                                `./public/product/${basename(phot)}`
-                            )
-                        );
-                    });
-
-                    if (request.updateStock) {
-                        const stock = new StockProductModels();
-                        stock.token = uuidv4();
-                        stock.product = product._id;
-                        stock.type = request.updateStock < 0 ? 'subtraction' : 'addition';
-                        stock.code = 'update';
-                        stock.total = Math.abs(request.updateStock);
-                        stock.createdAt = new Date();
-                        await stock.save();
-                    }
-
-                    res.status(200).json({
-                        message: 'Congratulations, you have successfully update your data.',
-                    });
-                } else {
-                    res.status(403).json({
-                        message:
-                            'Pay attention to your input, there are some required things you missed.',
-                    });
-                }
+                res.status(403).json({
+                    message: `An error occurred in the system update product. ${error}`,
+                });
             }
         } catch (error) {
-            console.log(error);
             res.status(403).json({
                 message: `An error occurred in the system update product. ${error}`,
             });
