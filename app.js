@@ -12,8 +12,6 @@ const environment = process.env.NODE_ENV || 'development';
 const envFile = `.env.${environment}`;
 dotenv.config({ path: envFile });
 
-// console.log('env', environment)
-
 const port = 4000;
 const app = express();
 
@@ -31,6 +29,7 @@ app.use(express.static('public'));
 app.use('/images', express.static('public'));
 app.use('/api/v1/product', cors(corsOptions), productRouters);
 app.use('/api/v1/category', cors(corsOptions), categoryRouters);
+app.use('/api/v1/image', cors(corsOptions), categoryRouters);
 app.use('/api/v1', cors(corsOptions), v1Router);
 
 app.on('error', (error) => console.error('Server error:', error));

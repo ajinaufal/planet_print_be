@@ -3,7 +3,6 @@ const ProductModels = require('../models/databases/product_database');
 const StockProductModels = require('../models/databases/stock_product_database');
 const UpdateProductRequest = require('../models/request/update_product_request');
 const FileHelper = require('../helper/file_helper');
-const CategoryProductModels = require('../models/databases/category_database');
 const ProductRequest = require('../models/request/product_request');
 const AgregatorProduct = require('../agregator/agregation_product');
 const CreateProductRequest = require('../models/request/create_product_request');
@@ -11,11 +10,10 @@ const FilesModels = require('../models/databases/image_database');
 const FileRequest = require('../models/request/file_request');
 
 const { v4: uuidv4 } = require('uuid');
-const { basename } = require('path');
 const { stockTypeEnum, stockCodeEnum } = require('../enum/stock_type_enum');
 const { fileService } = require('../middleware/file_middleware');
 
-const productCreate = async (req, res) => {
+const createProduct = async (req, res) => {
     try {
         if (await SecurityHelper.isSecure(req, res, null)) {
             const fileImage = [];
@@ -23,6 +21,8 @@ const productCreate = async (req, res) => {
             const images = (field.images || []).map((image) => new FileRequest(image));
             const request = new CreateProductRequest(req);
             const validations = request.validation();
+
+            console.log(request);
 
             if (validations.length > 0) {
                 await Promise.all(
@@ -86,7 +86,6 @@ const getProduct = async (req, res) => {
     if (await SecurityHelper.isSecure(req, res, null)) {
         try {
             const request = new ProductRequest(req.query);
-            console.log(request);
             const products = await ProductModels.aggregate(
                 AgregatorProduct.getProduct(request),
                 { allowDiskUse: true },
@@ -159,24 +158,15 @@ const updateProduct = async (req, res) => {
                     token: { $eq: request.token },
                 });
 
-                const imagesDelete = await FilesModels.find({
-                    token: { $in: request.delete_photos },
-                });
-
                 if (request.title) prorduct.title = request.title;
                 if (request.price) prorduct.price = request.price;
                 if (request.description) prorduct.description = request.description;
                 if (request.spesification) prorduct.specification = request.spesification;
+                if (request.category) prorduct.category = category._id;
                 prorduct.updatedAt = new Date();
 
-                if (request.category) {
-                    const category = await CategoryProductModels.findOne({
-                        token: { $eq: request.category },
-                    });
-                    prorduct.category = category._id;
-                }
-
                 await ProductModels.updateOne(update);
+
                 if (request.updateStock) {
                     const stock = new StockProductModels();
                     stock.product = update._id;
@@ -186,6 +176,17 @@ const updateProduct = async (req, res) => {
                     stock.createdAt = new Date();
                     await stock.save();
                 }
+
+                if ((request.delete_photos || []).length > 0) {
+                    const imgs = await FilesModels.find({
+                        token: { $in: request.delete_photos },
+                    });
+
+                    imgs.map((image) => {
+                        if (image?.path) FileHelper.delete(image?.path);
+                    });
+                }
+
                 res.status(200).json({
                     message: 'Congratulations, you have successfully update your data.',
                 });
@@ -202,4 +203,4 @@ const updateProduct = async (req, res) => {
     }
 };
 
-module.exports = { productCreate, getProduct, deleteProduct };
+module.exports = { createProduct, getProduct, deleteProduct, updateProduct };
