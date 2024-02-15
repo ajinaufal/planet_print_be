@@ -7,11 +7,15 @@ const usersSchema = new mongoose.Schema({
     },
     name: {
         type: String,
+        required: true,
     },
     email: {
         type: String,
         required: true,
         unique: true,
+    },
+    photo: {
+        type: String,
     },
     role: {
         type: String,
@@ -24,10 +28,10 @@ const usersSchema = new mongoose.Schema({
         type: String,
         unique: true,
     },
-    image: {
+    phone: {
         type: String,
     },
-    phone: {
+    token_user: {
         type: String,
     },
     createdAt: {

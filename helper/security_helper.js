@@ -1,10 +1,10 @@
-const UsersModels = require("../models/databases/users_database");
-const EncryptHelper = require("./encript");
-const env = require("dotenv").config();
+const UsersModels = require('../models/databases/users_database');
+const EncryptHelper = require('./encript');
+const env = require('dotenv').config();
 
 class SecurityHelper {
     static dataToken(req) {
-        const token = req.headers["authorization"];
+        const token = req.headers['authorization'];
         const data = JSON.parse(EncryptHelper.rsaDecode(token));
         return data;
     }
@@ -17,8 +17,8 @@ class SecurityHelper {
 
     static async isSecure(req, res, role) {
         try {
-            const secretKey = req.headers["secret-key"];
-            const token = req.headers["authorization"];
+            const secretKey = req.headers['secret-key'];
+            const token = req.headers['authorization'];
             const compareKey = EncryptHelper.sha512(process.env.SECRET_KEY);
             const isKey = compareKey === secretKey;
             if (secretKey && isKey) {
@@ -35,32 +35,32 @@ class SecurityHelper {
                             if (role) {
                                 if (role == user.role) return true;
                                 res.status(406).json({
-                                    message: "Your position cannot access it",
+                                    message: 'Your position cannot access it',
                                 });
                             } else {
-                                return true;
+                                if (user.token_user == token) return true;
+                                return false;
                             }
-
                             return false;
                         } else {
                             res.status(401).json({
-                                message: "User not found",
+                                message: 'User not found',
                             });
                         }
                     } else {
                         res.status(401).json({
-                            message: "Your token has expired",
+                            message: 'Your token has expired',
                         });
                     }
                 } else {
                     res.status(401).json({
-                        message: "You forgot the token",
+                        message: 'You forgot the token',
                     });
                     return false;
                 }
             } else {
                 res.status(401).json({
-                    message: "You made a mistake with the key",
+                    message: 'You made a mistake with the key',
                 });
                 return false;
             }
@@ -73,13 +73,11 @@ class SecurityHelper {
 
     static verifyKey(req, res) {
         try {
-            const secretKey = req.headers["secret-key"];
+            const secretKey = req.headers['secret-key'];
             if (secretKey) {
-                return (
-                    EncryptHelper.sha512(process.env.SECRET_KEY) == secretKey
-                );
+                return EncryptHelper.sha512(process.env.SECRET_KEY) == secretKey;
             } else {
-                const message = "You made a mistake with the key.";
+                const message = 'You made a mistake with the key.';
                 res.status(401).json({ message: message, data: null });
                 return false;
             }
