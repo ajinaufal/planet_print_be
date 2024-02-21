@@ -39,7 +39,7 @@ const login = async (req, res) => {
                     message: 'success login',
                     data: {
                         name: user.name,
-                        photo: user.photo,
+                        // photo: user.photo,
                         email: user.email,
                         phone: user.phone,
                         role: user.role,
