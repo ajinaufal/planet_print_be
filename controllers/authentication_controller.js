@@ -12,9 +12,10 @@ const login = async (req, res) => {
         const request = new LoginRequest(req.body);
         var { currentDate, expirationDate } = TimeHelper.timeToken();
         if (request.email && request.password) {
+            const password = EncryptHelper.sha512(request.password);
             const user = await UsersModels.findOne({
                 email: { $eq: request.email },
-                password: { $eq: EncryptHelper.sha512(request.password) },
+                password: { $eq: password },
             });
             if (user) {
                 const token = EncryptHelper.rsaEncode(
@@ -30,7 +31,7 @@ const login = async (req, res) => {
                 await UsersModels.updateOne(
                     {
                         email: { $eq: request.email },
-                        password: { $eq: EncryptHelper.sha512(request.password) },
+                        password: { $eq: password },
                     },
                     { token_user: token }
                 );
@@ -65,22 +66,25 @@ const login = async (req, res) => {
 const register = async (req, res) => {
     const request = new RegisterRequest(req);
     if (SecurityHelper.verifyKey(req, res)) {
+        const password = EncryptHelper.sha512(request.password);
         const existAccount = await UsersModels.findOne({
             email: { $eq: request.email },
         });
+        console.log(existAccount);
         if (!existAccount) {
             if (request.email && request.password) {
                 const user = new UsersModels();
                 user.token = uuidv4();
                 user.role = userRoleEnum.User;
                 user.email = request.email;
-                user.password = EncryptHelper.sha512(request.password);
+                user.name = request.name;
+                user.password = password;
                 user.phone = request.phone;
                 user.createdAt = new Date();
                 user.updatedAt = new Date();
                 await user.save();
                 res.status(200).json({
-                    message: 'Congratulations, you have successfully logged in.',
+                    message: 'Congratulations, you have successfully register',
                     data: null,
                 });
             } else {

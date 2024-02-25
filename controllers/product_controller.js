@@ -87,21 +87,11 @@ const getProduct = async (req, res) => {
         try {
             const request = new ProductRequest(req.query);
             const products = await ProductModels.aggregate(
-                AgregatorProduct.getProduct(request),
-                { allowDiskUse: true },
-                { explain: true }
-            );
-            const totalItem = await ProductModels.find({ isDelete: false }).countDocuments();
-            const totalPage = totalItem > 0 ? Math.ceil(totalItem / request.size) : 1;
+                AgregatorProduct.getProduct(request)
+            ).allowDiskUse(true);
             res.status(200).json({
                 message: 'Congratulations, you have successfully get your data.',
                 data: products,
-                pagination: {
-                    size: request.size,
-                    total_item: totalItem,
-                    page: request.page,
-                    total_page: totalPage,
-                },
             });
         } catch (error) {
             console.error(error);

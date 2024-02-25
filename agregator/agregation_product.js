@@ -13,8 +13,6 @@ class AgregatorProduct {
             });
         }
 
-        pipeLine.push({ $skip: request.size * (request.page - 1) });
-
         pipeLine.push(
             ...[
                 {
@@ -137,6 +135,8 @@ class AgregatorProduct {
                         price: 1,
                         description: 1,
                         specification: 1,
+                        updated_at: 1,
+                        created_at: 1,
                         sold: {
                             $arrayElemAt: ['$sold', 0],
                         },
